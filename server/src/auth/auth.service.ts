@@ -1,10 +1,17 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
-import { UsersService } from "src/users/users.service";
-import { HashService } from "./hash/hash.service";
-import { User } from "src/entities/user.entity";
-import LoginRequestSchema, { LoginRequestDto } from "./dto/login-request.dto";
-import RegisterRequestSchema, { RegisterRequestDto } from "./dto/register-request.dto";
-import { Request, Response } from "express";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UsersService } from 'src/users/users.service';
+import { HashService } from './hash/hash.service';
+import { User } from 'src/entities/user.entity';
+import LoginRequestSchema, { LoginRequestDto } from './dto/login-request.dto';
+import RegisterRequestSchema, {
+  RegisterRequestDto,
+} from './dto/register-request.dto';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -14,11 +21,11 @@ export class AuthService {
   ) {}
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
-    if(!LoginRequestSchema.safeParse(loginRequestDTO).success) {
-      throw new UnauthorizedException("Invalid credentials");
+    if (!LoginRequestSchema.safeParse(loginRequestDTO).success) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const {email, password} = loginRequestDTO;
+    const { email, password } = loginRequestDTO;
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -38,42 +45,46 @@ export class AuthService {
   }
 
   async registerUser(registerRequestDTO: RegisterRequestDto) {
-    if(!RegisterRequestSchema.safeParse(registerRequestDTO).success) {
-      throw new BadRequestException("Incorrect registration data")
+    if (!RegisterRequestSchema.safeParse(registerRequestDTO).success) {
+      throw new BadRequestException('Incorrect registration data');
     }
 
-    const userExists = await this.usersService.findByEmail(registerRequestDTO.email);
-    if(userExists) {
-      throw new BadRequestException("User already exists");
+    const userExists = await this.usersService.findByEmail(
+      registerRequestDTO.email,
+    );
+    if (userExists) {
+      throw new BadRequestException('User already exists');
     }
 
-    registerRequestDTO.password = await this.hashService.hashPassword(registerRequestDTO.password);
+    registerRequestDTO.password = await this.hashService.hashPassword(
+      registerRequestDTO.password,
+    );
     try {
       await this.usersService.addUser(registerRequestDTO);
       return {
         message: 'User registered successfully',
-      }
+      };
     } catch (err) {
       console.error(err);
-      throw new InternalServerErrorException("Failed to register user");
+      throw new InternalServerErrorException('Failed to register user');
     }
   }
 
-  async logout(request: Request, response: Response) {
-    response.clearCookie('connect.sid')
-    const logoutError = await new Promise((resolve) => {
-        request.logOut( (error) =>
-          resolve(error),
-        )
-      }
-    );
-    const sessionError = await new Promise((resolve) => {
-        request.session.destroy((error) =>
-          resolve(error),
-        )
-      }
-    );
+  async login(req: any) {
+    return {
+      username: req.user.username,
+      message: 'Logged in',
+    };
+  }
 
+  async logout(request: Request, response: Response) {
+    response.clearCookie('connect.sid');
+    const logoutError = await new Promise((resolve) => {
+      request.logOut((error) => resolve(error));
+    });
+    const sessionError = await new Promise((resolve) => {
+      request.session.destroy((error) => resolve(error));
+    });
 
     if (logoutError || sessionError) {
       console.error(logoutError, sessionError);
