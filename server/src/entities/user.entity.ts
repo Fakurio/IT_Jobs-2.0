@@ -10,21 +10,21 @@ import { Role } from './role.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column('varchar', { length: 30 })
-  username: string;
+  username!: string;
 
   @Column('varchar', { length: 30, unique: true })
-  email: string;
+  email!: string;
 
   @Column('varchar', { length: 256 })
-  password: string;
+  password!: string;
 
   @Column('varchar', { length: 30, nullable: true })
-  cv: string;
+  cv!: string;
 
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({ name: 'user_roles' })
-  roles: Role[];
+  roles!: Role[];
 }

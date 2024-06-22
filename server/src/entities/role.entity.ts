@@ -9,11 +9,11 @@ export enum RoleTypes {
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column('enum', { enum: RoleTypes, default: RoleTypes.USER })
-  role: RoleTypes;
+  role!: RoleTypes;
 
   @ManyToMany(() => User, (user) => user.roles)
-  users: User[];
+  users!: User[];
 }

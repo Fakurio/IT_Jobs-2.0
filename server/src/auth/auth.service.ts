@@ -8,9 +8,7 @@ import { UsersService } from 'src/users/users.service';
 import { HashService } from './hash/hash.service';
 import { User } from 'src/entities/user.entity';
 import LoginRequestSchema, { LoginRequestDto } from './dto/login-request.dto';
-import RegisterRequestSchema, {
-  RegisterRequestDto,
-} from './dto/register-request.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
 import { Request, Response } from 'express';
 
 @Injectable()
@@ -45,10 +43,6 @@ export class AuthService {
   }
 
   async registerUser(registerRequestDTO: RegisterRequestDto) {
-    if (!RegisterRequestSchema.safeParse(registerRequestDTO).success) {
-      throw new BadRequestException('Incorrect registration data');
-    }
-
     const userExists = await this.usersService.findByEmail(
       registerRequestDTO.email,
     );
@@ -78,7 +72,7 @@ export class AuthService {
   }
 
   async logout(request: Request, response: Response) {
-    response.clearCookie('connect.sid');
+    response.clearCookie('connect.sid', { sameSite: 'strict' });
     const logoutError = await new Promise((resolve) => {
       request.logOut((error) => resolve(error));
     });
