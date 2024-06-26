@@ -7,7 +7,6 @@ import {
   Res,
   UseGuards,
   UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import RegisterRequestSchema, {
@@ -16,7 +15,7 @@ import RegisterRequestSchema, {
 import { LocalAuthGuard } from './guards/local-auth';
 import { IsAuthenticated } from './guards/is-authenticated';
 import { Request, Response } from 'express';
-import { ZodValidationPipe } from './pipes/zod-validation-pipe';
+import { ZodValidationPipe } from './pipes/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {

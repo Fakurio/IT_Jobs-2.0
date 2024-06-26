@@ -3,13 +3,13 @@ import {
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
-import { HashService } from './hash/hash.service';
-import { User } from 'src/entities/user.entity';
-import LoginRequestSchema, { LoginRequestDto } from './dto/login-request.dto';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { Request, Response } from 'express';
+} from "@nestjs/common";
+import { UsersService } from "../users/users.service";
+import { HashService } from "./hash/hash.service";
+import { User } from "src/entities/user.entity";
+import LoginRequestSchema, { LoginRequestDto } from "./dto/login-request.dto";
+import { RegisterRequestDto } from "./dto/register-request.dto";
+import { Request, Response } from "express";
 
 @Injectable()
 export class AuthService {
@@ -20,14 +20,14 @@ export class AuthService {
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
     if (!LoginRequestSchema.safeParse(loginRequestDTO).success) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const { email, password } = loginRequestDTO;
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('User does not exist');
+      throw new UnauthorizedException("User does not exist");
     }
 
     const passwordCheck = await this.hashService.verifyPassword(
@@ -36,7 +36,7 @@ export class AuthService {
     );
 
     if (!passwordCheck) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     return user;
@@ -47,7 +47,7 @@ export class AuthService {
       registerRequestDTO.email,
     );
     if (userExists) {
-      throw new BadRequestException('User already exists');
+      throw new BadRequestException("User already exists");
     }
 
     registerRequestDTO.password = await this.hashService.hashPassword(
@@ -56,23 +56,23 @@ export class AuthService {
     try {
       await this.usersService.addUser(registerRequestDTO);
       return {
-        message: 'User registered successfully',
+        message: "User registered successfully",
       };
     } catch (err) {
       console.error(err);
-      throw new InternalServerErrorException('Failed to register user');
+      throw new InternalServerErrorException("Failed to register user");
     }
   }
 
   async login(req: any) {
     return {
       username: req.user.username,
-      message: 'Logged in',
+      message: "Logged in",
     };
   }
 
   async logout(request: Request, response: Response) {
-    response.clearCookie('connect.sid', { sameSite: 'strict' });
+    response.clearCookie("connect.sid", { sameSite: "strict" });
     const logoutError = await new Promise((resolve) => {
       request.logOut((error) => resolve(error));
     });
@@ -82,7 +82,7 @@ export class AuthService {
 
     if (logoutError || sessionError) {
       console.error(logoutError, sessionError);
-      throw new InternalServerErrorException('Could not log out user');
+      throw new InternalServerErrorException("Could not log out user");
     }
 
     return {
