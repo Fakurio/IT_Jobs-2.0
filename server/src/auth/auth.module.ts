@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import {
+  forwardRef,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { HashService } from "./hash/hash.service";
@@ -19,12 +24,13 @@ import * as passport from "passport";
   providers: [AuthService, HashService, LocalStrategy, UserSerializer],
   controllers: [AuthController],
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     PassportModule.register({
       session: true,
     }),
     TypeOrmModule.forFeature([Session]),
   ],
+  exports: [HashService],
 })
 export class AuthModule implements NestModule {
   private expressSession: any;

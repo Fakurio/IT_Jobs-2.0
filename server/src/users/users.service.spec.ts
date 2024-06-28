@@ -1,11 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Role } from '../entities/role.entity';
-import { User } from '../entities/user.entity';
-import { Repository } from 'typeorm';
+import { Test, TestingModule } from "@nestjs/testing";
+import { UsersService } from "./users.service";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Role } from "../entities/role.entity";
+import { User } from "../entities/user.entity";
+import { Repository } from "typeorm";
+import { HashService } from "../auth/hash/hash.service";
 
-describe('UsersService', () => {
+describe("UsersService", () => {
   let service: UsersService;
   let usersRepository: Repository<User>;
   let rolesRepository: Repository<Role>;
@@ -15,9 +16,9 @@ describe('UsersService', () => {
     findOne: jest.fn(() =>
       Promise.resolve({
         id: 1,
-        email: 'kamil@gmail.com',
-        password: '12345678',
-        username: 'Kamil',
+        email: "kamil@gmail.com",
+        password: "12345678",
+        username: "Kamil",
         roles: [],
       }),
     ),
@@ -38,6 +39,10 @@ describe('UsersService', () => {
           provide: getRepositoryToken(Role),
           useValue: rolesRepositoryMock,
         },
+        {
+          provide: HashService,
+          useValue: {},
+        },
       ],
     }).compile();
 
@@ -46,15 +51,15 @@ describe('UsersService', () => {
     rolesRepository = module.get<Repository<Role>>(getRepositoryToken(Role));
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  it('should add new user', async () => {
+  it("should add new user", async () => {
     const user = {
-      email: 'kamil@gmail.com',
-      password: '123456',
-      username: 'Kamil',
+      email: "kamil@gmail.com",
+      password: "123456",
+      username: "Kamil",
     };
     expect(await service.addUser(user)).toEqual({ id: 1, ...user, roles: [] });
     expect(usersRepository.save).toHaveBeenLastCalledWith({
@@ -65,20 +70,20 @@ describe('UsersService', () => {
     expect(rolesRepository.findBy).toHaveBeenCalledTimes(1);
   });
 
-  it('should find user by email and return it', async () => {
-    const email = 'kamil@gmail.com';
+  it("should find user by email and return it", async () => {
+    const email = "kamil@gmail.com";
     const user = {
       id: 1,
       email,
-      username: 'Kamil',
-      password: '12345678',
+      username: "Kamil",
+      password: "12345678",
       roles: [],
     };
     expect(await service.findByEmail(email)).toEqual(user);
     expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
     expect(usersRepository.findOne).toHaveBeenLastCalledWith({
       where: { email },
-      relations: ['roles'],
+      relations: ["roles"],
     });
   });
 });

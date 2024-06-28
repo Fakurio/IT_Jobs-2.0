@@ -45,7 +45,6 @@ export class AuthController {
     return "Hello World!!";
   }
 
-  @UseInterceptors(CheckCsrfTokenInterceptor)
   @UseGuards(IsAuthenticated)
   @Post("/logout")
   async logout(
