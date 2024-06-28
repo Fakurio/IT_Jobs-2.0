@@ -1,6 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
+import { HashService } from "./hash/hash.service";
+import { ConfigService } from "@nestjs/config";
 
 describe("AuthController", () => {
   let authService: AuthService;
@@ -17,7 +19,11 @@ describe("AuthController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: authServiceMock }],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: HashService, useValue: {} },
+        { provide: ConfigService, useValue: {} },
+      ],
     }).compile();
     authService = module.get<AuthService>(AuthService);
     authController = module.get<AuthController>(AuthController);
@@ -32,7 +38,12 @@ describe("AuthController", () => {
 
   it("should call login method from service", async () => {
     const requestMock = {};
-    expect(await authController.login(requestMock)).toEqual(true);
+    const responseMock = {
+      status: jest.fn(),
+    };
+    expect(
+      await authController.login(requestMock as any, responseMock as any),
+    ).toEqual(true);
     expect(authService.login).toHaveBeenCalledTimes(1);
   });
 
@@ -50,9 +61,14 @@ describe("AuthController", () => {
   });
 
   it("should call logout method from service", async () => {
-    expect(await authController.logout({} as any, {} as any)).toEqual({
-      logout: true,
-    });
+    const responseMock = {
+      status: jest.fn(),
+    };
+    expect(await authController.logout({} as any, responseMock as any)).toEqual(
+      {
+        logout: true,
+      },
+    );
     expect(authService.logout).toHaveBeenCalledTimes(1);
   });
 });
