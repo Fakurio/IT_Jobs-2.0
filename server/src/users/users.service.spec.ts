@@ -5,11 +5,14 @@ import { Role } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { HashService } from "../auth/hash/hash.service";
+import UpdateProfileDto, { UpdateProfileDTO } from "./dto/update-profile.dto";
+import { BadRequestException } from "@nestjs/common";
 
 describe("UsersService", () => {
   let service: UsersService;
   let usersRepository: Repository<User>;
   let rolesRepository: Repository<Role>;
+  let hashService: HashService;
 
   let usersRepositoryMock = {
     save: jest.fn((user) => Promise.resolve({ id: 1, ...user })),
@@ -22,9 +25,13 @@ describe("UsersService", () => {
         roles: [],
       }),
     ),
+    update: jest.fn((user, value) => Promise.resolve({ ...user, value })),
   };
   let rolesRepositoryMock = {
     findBy: jest.fn(() => Promise.resolve([])),
+  };
+  let hashServiceMock = {
+    hashPassword: jest.fn((password) => Promise.resolve(password)),
   };
 
   beforeEach(async () => {
@@ -41,7 +48,7 @@ describe("UsersService", () => {
         },
         {
           provide: HashService,
-          useValue: {},
+          useValue: hashServiceMock,
         },
       ],
     }).compile();
@@ -49,6 +56,10 @@ describe("UsersService", () => {
     service = module.get<UsersService>(UsersService);
     usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
     rolesRepository = module.get<Repository<Role>>(getRepositoryToken(Role));
+    hashService = module.get<HashService>(HashService);
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it("should be defined", () => {
@@ -85,5 +96,111 @@ describe("UsersService", () => {
       where: { email },
       relations: ["roles"],
     });
+  });
+
+  it("should update user's username", async () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+      },
+    } as any;
+    const userDTOMock = {
+      username: "Fakurio",
+    };
+    const cv = undefined as unknown as Express.Multer.File;
+    expect(await service.updateProfile(requestMock, userDTOMock, cv)).toEqual({
+      message: "Profile updated successfully",
+    });
+    expect(usersRepository.update).toHaveBeenCalledTimes(1);
+    expect(usersRepository.update).toHaveBeenCalledWith(
+      {
+        email: "kamil@admin.pl",
+      },
+      { username: "Fakurio" },
+    );
+  });
+
+  it("should update user's password", async () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+      },
+    } as any;
+    const userDTOMock = {
+      password: "mocne_hasło",
+    };
+    const cv = undefined as unknown as Express.Multer.File;
+    expect(await service.updateProfile(requestMock, userDTOMock, cv)).toEqual({
+      message: "Profile updated successfully",
+    });
+    expect(usersRepository.update).toHaveBeenCalledTimes(1);
+    expect(usersRepository.update).toHaveBeenCalledWith(
+      {
+        email: "kamil@admin.pl",
+      },
+      { password: "mocne_hasło" },
+    );
+    expect(hashService.hashPassword).toHaveBeenCalledWith("mocne_hasło");
+    expect(hashService.hashPassword).toHaveBeenCalledTimes(1);
+  });
+
+  it("should update user's cv", async () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+      },
+    } as any;
+    const userDTOMock = {
+      username: undefined,
+      password: undefined,
+    };
+    const cv = {
+      filename: "moje-cv.pdf",
+    } as Express.Multer.File;
+    expect(await service.updateProfile(requestMock, userDTOMock, cv)).toEqual({
+      message: "Profile updated successfully",
+    });
+    expect(usersRepository.update).toHaveBeenCalledTimes(1);
+    expect(usersRepository.update).toHaveBeenCalledWith(
+      {
+        email: "kamil@admin.pl",
+      },
+      { cv: "moje-cv.pdf" },
+    );
+  });
+
+  it("should throw error -> no profile data provided", async () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+      },
+    } as any;
+    const userDTOMock = {
+      username: undefined,
+      password: undefined,
+    };
+    const cv = undefined as unknown as Express.Multer.File;
+    try {
+      await service.updateProfile(requestMock, userDTOMock, cv);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("No data provided for profile update");
+    }
   });
 });

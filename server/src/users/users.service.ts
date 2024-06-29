@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entities/user.entity";
 import { Repository } from "typeorm";
@@ -42,6 +46,9 @@ export class UsersService {
     cv: Express.Multer.File,
   ) {
     const { password, username } = userDTO;
+    if (!username && !password && !cv) {
+      throw new BadRequestException("No data provided for profile update");
+    }
     const authenticatedUser = request.user as User;
     try {
       if (username) {

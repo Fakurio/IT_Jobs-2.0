@@ -38,13 +38,6 @@ export class AuthController {
     return this.authService.registerUser(registerRequestDTO);
   }
 
-  @UseInterceptors(CheckCsrfTokenInterceptor)
-  @UseGuards(IsAuthenticated)
-  @Get("/protected")
-  hello() {
-    return "Hello World!!";
-  }
-
   @UseGuards(IsAuthenticated)
   @Post("/logout")
   async logout(

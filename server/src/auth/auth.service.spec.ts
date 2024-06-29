@@ -3,7 +3,6 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "../users/users.service";
 import { HashService } from "./hash/hash.service";
 import { BadRequestException, UnauthorizedException } from "@nestjs/common";
-import { Request } from "express";
 
 describe("AuthService", () => {
   let authService: AuthService;
