@@ -5,7 +5,6 @@ import { Role } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { HashService } from "../auth/hash/hash.service";
-import UpdateProfileDto, { UpdateProfileDTO } from "./dto/update-profile.dto";
 import { BadRequestException } from "@nestjs/common";
 
 describe("UsersService", () => {
@@ -32,6 +31,9 @@ describe("UsersService", () => {
   };
   let hashServiceMock = {
     hashPassword: jest.fn((password) => Promise.resolve(password)),
+    verifyPassword: jest.fn((password, hash) =>
+      Promise.resolve(password === hash),
+    ),
   };
 
   beforeEach(async () => {
@@ -135,7 +137,8 @@ describe("UsersService", () => {
       },
     } as any;
     const userDTOMock = {
-      password: "mocne_hasło",
+      oldPassword: "12345678",
+      newPassword: "mocne_hasło",
     };
     const cv = undefined as unknown as Express.Multer.File;
     expect(await service.updateProfile(requestMock, userDTOMock, cv)).toEqual({
@@ -148,8 +151,41 @@ describe("UsersService", () => {
       },
       { password: "mocne_hasło" },
     );
+    expect(hashService.verifyPassword).toHaveBeenCalledWith(
+      "12345678",
+      "12345678",
+    );
+    expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
     expect(hashService.hashPassword).toHaveBeenCalledWith("mocne_hasło");
     expect(hashService.hashPassword).toHaveBeenCalledTimes(1);
+  });
+
+  it("should fail updating user's password -> oldPassword is invalid", async () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+      },
+    } as any;
+    const userDTOMock = {
+      oldPassword: "987877333",
+      newPassword: "mocne_hasło",
+    };
+    const cv = undefined as unknown as Express.Multer.File;
+    try {
+      await service.updateProfile(requestMock, userDTOMock, cv);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("Invalid old password");
+      expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
+      expect(hashService.verifyPassword).toHaveBeenCalledWith(
+        "987877333",
+        "12345678",
+      );
+    }
   });
 
   it("should update user's cv", async () => {
@@ -193,7 +229,8 @@ describe("UsersService", () => {
     } as any;
     const userDTOMock = {
       username: undefined,
-      password: undefined,
+      oldPassword: undefined,
+      newPassword: undefined,
     };
     const cv = undefined as unknown as Express.Multer.File;
     try {

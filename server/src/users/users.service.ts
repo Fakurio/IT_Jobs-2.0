@@ -45,8 +45,8 @@ export class UsersService {
     userDTO: UpdateProfileDTO,
     cv: Express.Multer.File,
   ) {
-    const { password, username } = userDTO;
-    if (!username && !password && !cv) {
+    const { oldPassword, username, newPassword } = userDTO;
+    if (!username && !oldPassword && !cv && !newPassword) {
       throw new BadRequestException("No data provided for profile update");
     }
     const authenticatedUser = request.user as User;
@@ -54,8 +54,8 @@ export class UsersService {
       if (username) {
         await this.updateUsername(authenticatedUser, username);
       }
-      if (password) {
-        await this.updatePassword(authenticatedUser, password);
+      if (newPassword && oldPassword) {
+        await this.updatePassword(authenticatedUser, oldPassword, newPassword);
       }
       if (cv) {
         await this.updateCV(authenticatedUser, cv);
@@ -64,6 +64,9 @@ export class UsersService {
         message: "Profile updated successfully",
       };
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
       console.log(error);
       throw new InternalServerErrorException("Failed to update profile");
     }
@@ -78,8 +81,19 @@ export class UsersService {
     );
   }
 
-  private async updatePassword(authenticatedUser: User, password: string) {
-    const passwordHash = await this.hashService.hashPassword(password);
+  private async updatePassword(
+    authenticatedUser: User,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    const passwordCheck = await this.hashService.verifyPassword(
+      oldPassword,
+      authenticatedUser.password,
+    );
+    if (!passwordCheck) {
+      throw new BadRequestException("Invalid old password");
+    }
+    const passwordHash = await this.hashService.hashPassword(newPassword);
     await this.usersRepository.update(
       { email: authenticatedUser.email },
       { password: passwordHash },
