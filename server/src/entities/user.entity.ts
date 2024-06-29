@@ -3,9 +3,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Role } from "./role.entity";
+import { JobPost } from "./job-post.entity";
 
 @Entity()
 export class User {
@@ -27,4 +29,7 @@ export class User {
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({ name: "user_roles" })
   roles!: Role[];
+
+  @OneToMany(() => JobPost, (jobPost) => jobPost.author)
+  jobPosts!: JobPost[];
 }
