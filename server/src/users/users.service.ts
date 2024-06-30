@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  StreamableFile,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entities/user.entity";
@@ -9,8 +10,11 @@ import { Repository } from "typeorm";
 import { RegisterRequestDto } from "../auth/dto/register-request.dto";
 import { Role, RoleTypes } from "../entities/role.entity";
 import { UpdateProfileDTO } from "./dto/update-profile.dto";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { HashService } from "../auth/hash/hash.service";
+import { createReadStream } from "fs";
+import { join } from "path";
+import * as process from "node:process";
 
 @Injectable()
 export class UsersService {
@@ -70,6 +74,27 @@ export class UsersService {
       console.log(error);
       throw new InternalServerErrorException("Failed to update profile");
     }
+  }
+
+  getAuthenticatedUserCV(request: Request) {
+    const authenticatedUser = request.user as User;
+    if (!authenticatedUser.cv) {
+      throw new BadRequestException("You haven't uploaded CV");
+    }
+    const cv = createReadStream(
+      join(process.cwd(), `cv-files/${authenticatedUser.cv}`),
+    );
+    return new StreamableFile(cv);
+  }
+
+  previewAuthenticatedUserCV(request: Request, response: Response) {
+    const authenticatedUser = request.user as User;
+    if (!authenticatedUser.cv) {
+      throw new BadRequestException("You haven't uploaded CV");
+    }
+    return response.sendFile(
+      join(process.cwd(), `cv-files/${authenticatedUser.cv}`),
+    );
   }
 
   private async updateUsername(authenticatedUser: User, username: string) {

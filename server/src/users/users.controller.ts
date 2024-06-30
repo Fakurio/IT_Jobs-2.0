@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Param,
   Patch,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,8 +20,10 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "./pipes/file-validation.pipe";
 import { DiskStorage } from "./multer-storage/disk-storage";
 import { IsAuthenticated } from "../auth/guards/is-authenticated";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { CheckCsrfTokenInterceptor } from "../auth/interceptors/check-csrf-token.interceptor";
+import { join } from "path";
+import * as process from "node:process";
 
 @Controller("users")
 export class UsersController {
@@ -35,4 +40,26 @@ export class UsersController {
   ) {
     return this.usersService.updateProfile(request, userDTO, cv);
   }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/cv")
+  downloadAuthenticatedUserCV(@Req() request: Request) {
+    return this.usersService.getAuthenticatedUserCV(request);
+  }
+
+  @UseGuards(IsAuthenticated)
+  @Get("/cv/static")
+  previewAuthenticatedUserCV(
+    @Req() request: Request,
+    @Res() response: Response,
+  ) {
+    return this.usersService.previewAuthenticatedUserCV(request, response);
+  }
+
+  // @Delete("/cv")
+  // removeAuthenticatedUserCV(@Req() request: Request) {}
+
+  // @Get("cv/:applicationID")
+  // downloadApplicantCV() {}
 }

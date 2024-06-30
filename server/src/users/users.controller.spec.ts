@@ -4,6 +4,7 @@ import { UsersService } from "./users.service";
 import { HashService } from "../auth/hash/hash.service";
 import { ConfigService } from "@nestjs/config";
 import { User } from "../entities/user.entity";
+import { StreamableFile } from "@nestjs/common";
 
 describe("UsersController", () => {
   let controller: UsersController;
@@ -11,6 +12,8 @@ describe("UsersController", () => {
 
   let usersServiceMock = {
     updateProfile: jest.fn(() => Promise.resolve(true)),
+    getAuthenticatedUserCV: jest.fn(() => true),
+    previewAuthenticatedUserCV: jest.fn(() => true),
   };
 
   beforeEach(async () => {
@@ -39,5 +42,18 @@ describe("UsersController", () => {
       await controller.updateProfile(userDTOMock, cv, requestMock),
     ).toEqual(true);
     expect(usersService.updateProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call getAuthenticatedUserCV from service", () => {
+    const requestMock = {} as any;
+    expect(controller.downloadAuthenticatedUserCV(requestMock)).toEqual(true);
+    expect(usersService.getAuthenticatedUserCV).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call previewAuthenticatedUserCV from service", () => {
+    const requestMock = {} as any;
+    const responseMock = {} as any;
+    controller.previewAuthenticatedUserCV(requestMock, responseMock);
+    expect(usersService.previewAuthenticatedUserCV).toHaveBeenCalledTimes(1);
   });
 });

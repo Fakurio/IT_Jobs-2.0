@@ -2,7 +2,7 @@ import { diskStorage } from "multer";
 import { User } from "../../entities/user.entity";
 import * as fs from "fs";
 
-const DESTINATION_PATH = "src/users/cv-files/";
+const DESTINATION_PATH = "cv-files/";
 
 export const DiskStorage = diskStorage({
   destination: function (req, file, cb) {

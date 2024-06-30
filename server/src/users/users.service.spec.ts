@@ -5,7 +5,11 @@ import { Role } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { HashService } from "../auth/hash/hash.service";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, StreamableFile } from "@nestjs/common";
+import * as fs from "node:fs";
+import * as process from "node:process";
+import { join } from "path";
+import { response } from "express";
 
 describe("UsersService", () => {
   let service: UsersService;
@@ -239,5 +243,69 @@ describe("UsersService", () => {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toEqual("No data provided for profile update");
     }
+  });
+
+  it("should throw error -> cv not uploaded", () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+        cv: null,
+      },
+    } as any;
+    try {
+      service.getAuthenticatedUserCV(requestMock);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("You haven't uploaded CV");
+    }
+  });
+
+  it("should download user's cv", () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+        cv: "cv.pdf",
+      },
+    } as any;
+    const createReadStreamMock = jest.fn((path, options) => true);
+    jest
+      .spyOn(fs, "createReadStream")
+      .mockImplementationOnce(createReadStreamMock as any);
+    expect(service.getAuthenticatedUserCV(requestMock)).toBeInstanceOf(
+      StreamableFile,
+    );
+    expect(fs.createReadStream).toHaveBeenCalledTimes(1);
+    expect(fs.createReadStream).toHaveBeenCalledWith(
+      join(process.cwd(), `cv-files/${requestMock.user.cv}`),
+    );
+  });
+
+  it("should preview user's cv", () => {
+    const requestMock = {
+      user: {
+        id: 1,
+        email: "kamil@admin.pl",
+        username: "Kamil",
+        password: "12345678",
+        roles: [],
+        cv: "cv.pdf",
+      },
+    } as any;
+    const responseMock = {
+      sendFile: jest.fn((path) => Promise.resolve(true)),
+    } as any;
+    service.previewAuthenticatedUserCV(requestMock, responseMock);
+    expect(responseMock.sendFile).toHaveBeenCalledTimes(1);
+    expect(responseMock.sendFile).toHaveBeenCalledWith(
+      join(process.cwd(), `cv-files/${requestMock.user.cv}`),
+    );
   });
 });

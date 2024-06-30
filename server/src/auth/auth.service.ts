@@ -66,6 +66,7 @@ export class AuthService {
 
   async login(req: any) {
     return {
+      cv: req.user.cv,
       username: req.user.username,
       message: "Logged in",
     };
