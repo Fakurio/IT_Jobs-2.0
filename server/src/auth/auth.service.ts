@@ -10,6 +10,7 @@ import { User } from "src/entities/user.entity";
 import LoginRequestSchema, { LoginRequestDto } from "./dto/login-request.dto";
 import { RegisterRequestDto } from "./dto/register-request.dto";
 import { Request, Response } from "express";
+import { RoleTypes } from "../entities/role.entity";
 
 @Injectable()
 export class AuthService {
@@ -54,7 +55,7 @@ export class AuthService {
       registerRequestDTO.password,
     );
     try {
-      await this.usersService.addUser(registerRequestDTO);
+      await this.usersService.addUser(registerRequestDTO, RoleTypes.USER);
       return {
         message: "User registered successfully",
       };

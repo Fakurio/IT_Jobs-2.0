@@ -33,13 +33,16 @@ export class UsersService {
     });
   }
 
-  async addUser(registerRequestDTO: RegisterRequestDto): Promise<User> {
+  async addUser(
+    registerRequestDTO: RegisterRequestDto,
+    role: RoleTypes,
+  ): Promise<User> {
     const newUser = new User();
     newUser.email = registerRequestDTO.email;
     newUser.password = registerRequestDTO.password;
     newUser.username = registerRequestDTO.username;
     newUser.roles = await this.rolesRepository.findBy({
-      role: RoleTypes.USER,
+      role: role,
     });
     return await this.usersRepository.save(newUser);
   }

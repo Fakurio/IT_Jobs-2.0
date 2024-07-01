@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   Post,
   Req,
   Res,
@@ -18,7 +17,6 @@ import { IsAuthenticated } from "./guards/is-authenticated";
 import { Request, Response } from "express";
 import { ZodValidationPipe } from "./pipes/zod-validation.pipe";
 import { GenerateCsrfTokenInterceptor } from "./interceptors/generate-csrf-token.interceptor";
-import { CheckCsrfTokenInterceptor } from "./interceptors/check-csrf-token.interceptor";
 
 @Controller("auth")
 export class AuthController {

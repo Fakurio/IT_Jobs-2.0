@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Role } from "../entities/role.entity";
+import { Role, RoleTypes } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { HashService } from "../auth/hash/hash.service";
@@ -78,7 +78,12 @@ describe("UsersService", () => {
       password: "123456",
       username: "Kamil",
     };
-    expect(await service.addUser(user)).toEqual({ id: 1, ...user, roles: [] });
+    const role = RoleTypes.USER;
+    expect(await service.addUser(user, role)).toEqual({
+      id: 1,
+      ...user,
+      roles: [],
+    });
     expect(usersRepository.save).toHaveBeenLastCalledWith({
       ...user,
       roles: [],

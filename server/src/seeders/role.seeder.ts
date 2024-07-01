@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Seeder } from 'nestjs-seeder';
-import { Repository } from 'typeorm';
+import {Repository, Table} from 'typeorm';
 import { Role, RoleTypes } from '../entities/role.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -12,14 +12,15 @@ export class RoleSeeder implements Seeder {
   ) {}
 
   async seed(): Promise<any> {
-    for (const role of Object.values(RoleTypes)) {
-      let newRole = new Role();
-      newRole.role = role;
-      await this.rolesRepository.save(newRole);
+    const tableContent = await this.rolesRepository.find({});
+    if(tableContent.length === 0) {
+      for (const role of Object.values(RoleTypes)) {
+        let newRole = new Role();
+        newRole.role = role;
+        await this.rolesRepository.save(newRole);
+      }
     }
   }
 
-  async drop(): Promise<any> {
-    return await this.rolesRepository.delete({});
-  }
+  async drop(): Promise<any> {}
 }

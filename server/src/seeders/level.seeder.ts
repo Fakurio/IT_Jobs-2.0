@@ -12,14 +12,16 @@ export class LevelSeeder implements Seeder {
   ) {}
 
   async seed(): Promise<any> {
-    for (const level of Object.values(LevelEnum)) {
-      let newLevel = new Level();
-      newLevel.level = level;
-      await this.levelsRepository.save(newLevel);
+    const tableContent = await this.levelsRepository.find({});
+    if(tableContent.length === 0) {
+      for (const level of Object.values(LevelEnum)) {
+        let newLevel = new Level();
+        newLevel.level = level;
+        await this.levelsRepository.save(newLevel);
+      }
     }
   }
 
   async drop(): Promise<any> {
-    return await this.levelsRepository.delete({});
   }
 }

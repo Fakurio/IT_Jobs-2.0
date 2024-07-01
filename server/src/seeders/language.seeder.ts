@@ -12,14 +12,15 @@ export class LanguageSeeder implements Seeder {
   ) {}
 
   async seed(): Promise<any> {
-    for (const lang of Object.values(LanguageEnum)) {
-      let newLang = new Language();
-      newLang.language = lang;
-      await this.languagesRepository.save(newLang);
+    const tableContent = await this.languagesRepository.find({});
+    if(tableContent.length === 0) {
+      for (const lang of Object.values(LanguageEnum)) {
+        let newLang = new Language();
+        newLang.language = lang;
+        await this.languagesRepository.save(newLang);
+      }
     }
   }
 
-  async drop(): Promise<any> {
-    return await this.languagesRepository.delete({});
-  }
+  async drop(): Promise<any> {}
 }

@@ -15,14 +15,15 @@ export class ContractTypeSeeder implements Seeder {
   ) {}
 
   async seed(): Promise<any> {
-    for (const type of Object.values(ContractTypeEnum)) {
-      let newContract = new ContractType();
-      newContract.type = type;
-      await this.contractTypesRepository.save(newContract);
+    const tableContent = await this.contractTypesRepository.find({});
+    if(tableContent.length === 0) {
+      for (const type of Object.values(ContractTypeEnum)) {
+        let newContract = new ContractType();
+        newContract.type = type;
+        await this.contractTypesRepository.save(newContract);
+      }
     }
   }
 
-  async drop(): Promise<any> {
-    return await this.contractTypesRepository.delete({});
-  }
+  async drop(): Promise<any> {}
 }

@@ -12,14 +12,16 @@ export class StatusSeeder implements Seeder {
   ) {}
 
   async seed(): Promise<any> {
-    for (const status of Object.values(StatusEnum)) {
-      let newStatus = new Status();
-      newStatus.status = status;
-      await this.statusesRepository.save(newStatus);
+    const tableContent = await this.statusesRepository.find({});
+    if(tableContent.length === 0) {
+      for (const status of Object.values(StatusEnum)) {
+        let newStatus = new Status();
+        newStatus.status = status;
+        await this.statusesRepository.save(newStatus);
+      }
     }
   }
 
   async drop(): Promise<any> {
-    return await this.statusesRepository.delete({});
   }
 }
