@@ -14,6 +14,10 @@ import { LanguageSeeder } from "../src/seeders/language.seeder";
 import { JobPost } from "../src/entities/job-post.entity";
 import { JobPostSeeder } from "../src/seeders/job-post.seeder";
 import { User } from "../src/entities/user.entity";
+import { UsersModule } from "src/users/users.module";
+import { UserSeeder } from "src/seeders/user.seeder";
+import { ConfigModule } from "@nestjs/config";
+import { AuthModule } from "src/auth/auth.module";
 
 seeder({
   imports: [
@@ -27,6 +31,11 @@ seeder({
       JobPost,
       User,
     ]),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    UsersModule,
+    AuthModule,
   ],
 }).run([
   RoleSeeder,
@@ -34,5 +43,6 @@ seeder({
   LevelSeeder,
   StatusSeeder,
   LanguageSeeder,
+  UserSeeder,
   JobPostSeeder,
 ]);
