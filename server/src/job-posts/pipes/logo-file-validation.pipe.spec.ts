@@ -1,42 +1,49 @@
-import { FileValidationPipe } from "./file-validation.pipe";
 import { Test, TestingModule } from "@nestjs/testing";
+import { LogoFileValidationPipe } from "./logo-file-validation.pipe";
 import { BadRequestException } from "@nestjs/common";
 
-describe("FileValidationPipe", () => {
-  let pipe: FileValidationPipe;
+describe("LogoFileValidationPipe", () => {
+  let pipe: LogoFileValidationPipe;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FileValidationPipe],
+      providers: [LogoFileValidationPipe],
     }).compile();
-    pipe = module.get<FileValidationPipe>(FileValidationPipe);
+    pipe = module.get<LogoFileValidationPipe>(LogoFileValidationPipe);
   });
 
   it("should be defined", () => {
     expect(pipe).toBeDefined();
   });
 
-  it("should return valid file", () => {
+  it("should return file", () => {
     const file = {
-      mimetype: "application/pdf",
+      mimetype: "image/jpg",
     } as Express.Multer.File;
     expect(pipe.transform(file)).toEqual(file);
   });
 
   it("should throw error when file is not valid", () => {
     const file = {
-      mimetype: "application/json",
+      mimetype: "application/pdf",
     } as Express.Multer.File;
     try {
       pipe.transform(file);
     } catch (error: any) {
       expect(error).toBeInstanceOf(BadRequestException);
-      expect(error.message).toEqual("CV file must be in PDF format");
+      expect(error.message).toEqual(
+        "Logo file must be in JPG, JPEG, PNG or SVG format",
+      );
     }
   });
 
-  it("should return undefined when file is undefined", () => {
+  it("should throw error when file is missing", () => {
     const file = undefined as unknown as Express.Multer.File;
-    expect(pipe.transform(file)).toEqual(undefined);
+    try {
+      pipe.transform(file);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("Logo not uploaded");
+    }
   });
 });

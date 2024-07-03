@@ -26,7 +26,7 @@ export class JobPost {
   @Column("int")
   salary!: number;
 
-  @Column("varchar", { length: 20 })
+  @Column("varchar", { length: 40 })
   logo!: string;
 
   @Column("varchar", { length: 500 })

@@ -4,7 +4,7 @@ import * as fs from "fs";
 
 const DESTINATION_PATH = "cv-files/";
 
-export const DiskStorage = diskStorage({
+export const CVDiskStorage = diskStorage({
   destination: function (req, file, cb) {
     cb(null, DESTINATION_PATH);
   },

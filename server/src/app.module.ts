@@ -4,6 +4,7 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
 import { dataSourceOptions } from "./database/data-source";
 import { UsersModule } from "./users/users.module";
+import { JobPostsModule } from "./job-posts/job-posts.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsersModule } from "./users/users.module";
     TypeOrmModule.forRoot(dataSourceOptions as TypeOrmModuleOptions),
     AuthModule,
     UsersModule,
+    JobPostsModule,
   ],
 })
 export class AppModule {}

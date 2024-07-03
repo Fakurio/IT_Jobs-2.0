@@ -7,7 +7,7 @@ import { faker } from "@faker-js/faker";
 import { ContractType } from "../entities/contract-type.entity";
 import { Level } from "../entities/level.entity";
 import { User } from "../entities/user.entity";
-import { Status } from "../entities/status.entity";
+import { Status, StatusEnum } from "../entities/status.entity";
 import { Language, LanguageEnum } from "../entities/language.entity";
 import * as fs from "node:fs";
 import * as process from "node:process";
@@ -55,7 +55,7 @@ export class JobPostSeeder implements Seeder {
           where: { id: 1 },
         });
         post.status = <Status>await this.statusRepository.findOne({
-          where: { id: 1 },
+          where: { status: StatusEnum.ACCEPTED },
         });
         post.languages = await this.languagesRepository.findBy({
           language: In([languagesArray[i], languagesArray[i + 1]]),
