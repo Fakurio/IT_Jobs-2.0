@@ -9,6 +9,8 @@ import UpdateProfileSchema from "../../users/dto/update-profile.dto";
 import AddPostSchema from "../../job-posts/dto/add-post.dto";
 import { AddPostValidationException } from "../../exceptions/add-post-validation.exception";
 import { UpdateProfileValidationException } from "../../exceptions/update-profile-validation.exception";
+import UpdatePostStatus from "../../job-posts/dto/update-post-status.dto";
+import { StatusEnum } from "../../entities/status.entity";
 
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodObject<any> | ZodEffects<any>) {}
@@ -30,6 +32,11 @@ export class ZodValidationPipe implements PipeTransform {
         }
         if (this.schema.shape === AddPostSchema.shape) {
           throw new AddPostValidationException();
+        }
+        if (this.schema.shape === UpdatePostStatus.shape) {
+          throw new BadRequestException(
+            `Allowed status values: ${StatusEnum.ACCEPTED}, ${StatusEnum.REJECTED}`
+          );
         }
       }
       throw new BadRequestException("Validation failed");

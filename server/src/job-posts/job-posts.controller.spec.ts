@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { JobPostsService } from "./job-posts.service";
 import { AddPostDTO } from "./dto/add-post.dto";
 import { User } from "../entities/user.entity";
+import { StatusEnum } from "../entities/status.entity";
 
 describe("JobPostsController", () => {
   let controller: JobPostsController;
@@ -13,6 +14,11 @@ describe("JobPostsController", () => {
   const jobPostsServiceMock = {
     addPost: jest.fn((user, dto, logo) => Promise.resolve(true)),
     getAll: jest.fn(() => Promise.resolve([])),
+    getPostsForVerification: jest.fn(() => Promise.resolve([])),
+    getDetailsForPost: jest.fn((id) => Promise.resolve({ id: id })),
+    updatePostStatus: jest.fn((id, body) =>
+      Promise.resolve({ id: id, status: body.status })
+    ),
   };
 
   beforeEach(async () => {
@@ -50,5 +56,28 @@ describe("JobPostsController", () => {
   it("should call getAllPosts method from service", async () => {
     expect(await controller.getAllPosts()).toEqual([]);
     expect(jobPostsService.getAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call getPostsForVerification method from service", async () => {
+    expect(await controller.getPostsForVerification()).toEqual([]);
+    expect(jobPostsService.getPostsForVerification).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call getDetailsForPost method from service", async () => {
+    expect(await controller.getDetailsForPost(1)).toEqual({ id: 1 });
+    expect(jobPostsService.getDetailsForPost).toHaveBeenCalledTimes(1);
+    expect(jobPostsService.getDetailsForPost).toHaveBeenCalledWith(1);
+  });
+
+  it("should call updatePostStatus method from service", async () => {
+    const body = {
+      status: StatusEnum.ACCEPTED,
+    };
+    expect(await controller.updatePostStatus(1, body)).toEqual({
+      id: 1,
+      status: StatusEnum.ACCEPTED,
+    });
+    expect(jobPostsService.updatePostStatus).toHaveBeenCalledTimes(1);
+    expect(jobPostsService.updatePostStatus).toHaveBeenCalledWith(1, body);
   });
 });

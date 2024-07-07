@@ -2,6 +2,9 @@ import {
   Body,
   Controller,
   Get,
+  Put,
+  Param,
+  ParseIntPipe,
   Post,
   Req,
   UploadedFile,
@@ -20,6 +23,12 @@ import { Request } from "express";
 import { User } from "../entities/user.entity";
 import { LogoDiskStorage } from "./multer-logo-storage/logo-disk-storage";
 import { FileUploadFilter } from "../filters/file-upload.filter";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { RoleTypes } from "../entities/role.entity";
+import { RolesGuard } from "../auth/guards/roles.guard";
+import UpdatePostStatus, {
+  UpdatePostStatusDTO,
+} from "./dto/update-post-status.dto";
 
 @Controller("job-posts")
 export class JobPostsController {
@@ -38,9 +47,39 @@ export class JobPostsController {
   addPost(
     @Body(new ZodValidationPipe(AddPostSchema)) addPostDTO: AddPostDTO,
     @UploadedFile(new LogoFileValidationPipe()) logo: Express.Multer.File,
-    @Req() request: Request,
+    @Req() request: Request
   ) {
     const authenticatedUser = request.user as User;
     return this.jobPostsService.addPost(authenticatedUser, addPostDTO, logo);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleTypes.MODERATOR)
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/pending")
+  getPostsForVerification() {
+    return this.jobPostsService.getPostsForVerification();
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleTypes.MODERATOR)
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/pending/:id")
+  getDetailsForPost(@Param("id", ParseIntPipe) postID: number) {
+    return this.jobPostsService.getDetailsForPost(postID);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleTypes.MODERATOR)
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Put("/pending/:id/status")
+  updatePostStatus(
+    @Param("id", ParseIntPipe) postID: number,
+    @Body(new ZodValidationPipe(UpdatePostStatus)) body: UpdatePostStatusDTO
+  ) {
+    return this.jobPostsService.updatePostStatus(postID, body);
   }
 }

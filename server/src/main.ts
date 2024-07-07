@@ -10,9 +10,9 @@ async function bootstrap() {
     credentials: true,
     exposedHeaders: ["x-csrf-token"],
   });
-  // app.useStaticAssets(join(__dirname, "..", "logos"), {
-  //   prefix: "/logo/",
-  // });
+  app.useStaticAssets(join(__dirname, "..", "../logos"), {
+    prefix: "/logo/",
+  });
   await app.listen(3000);
 }
 bootstrap();

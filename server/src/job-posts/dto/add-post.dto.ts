@@ -38,11 +38,11 @@ const AddPostSchema = z.object({
     const array = val.split(",");
     let output: LanguageEnum[] = [];
     for (const el of array) {
-      // @ts-ignore
-      if (!languages.includes(el)) {
+      const enumValue = languages.find((lang) => lang === el);
+      if (!enumValue) {
         throw new Error();
       }
-      output.push(LanguageEnum[el]);
+      output.push(enumValue);
     }
     return output;
   }),

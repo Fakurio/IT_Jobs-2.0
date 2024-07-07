@@ -1,5 +1,9 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { In, Repository } from "typeorm";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { And, In, Repository } from "typeorm";
 import { JobPost } from "../entities/job-post.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Status, StatusEnum } from "../entities/status.entity";
@@ -8,6 +12,7 @@ import { ContractType } from "../entities/contract-type.entity";
 import { Level } from "../entities/level.entity";
 import { User } from "../entities/user.entity";
 import { Language } from "../entities/language.entity";
+import { UpdatePostStatusDTO } from "./dto/update-post-status.dto";
 
 @Injectable()
 export class JobPostsService {
@@ -21,7 +26,7 @@ export class JobPostsService {
     @InjectRepository(Status)
     private statusRepository: Repository<Status>,
     @InjectRepository(Language)
-    private languagesRepository: Repository<Language>,
+    private languagesRepository: Repository<Language>
   ) {}
 
   async getAll(): Promise<JobPost[]> {
@@ -47,7 +52,7 @@ export class JobPostsService {
   async addPost(
     authenticatedUser: User,
     addPostDto: AddPostDTO,
-    logo: Express.Multer.File,
+    logo: Express.Multer.File
   ) {
     try {
       const jobPost = new JobPost();
@@ -74,11 +79,69 @@ export class JobPostsService {
       });
       await this.jobPostsRepository.save(jobPost);
       return {
-        message: `JobPost added successfully`,
+        message: `After moderator approval, your job post will be visible to everyone`,
       };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException("Adding job post failed");
+    }
+  }
+
+  async getPostsForVerification() {
+    return await this.jobPostsRepository
+      .createQueryBuilder("jobPost")
+      .innerJoin("jobPost.author", "author")
+      .innerJoin("jobPost.status", "status")
+      .select(["jobPost.id", "jobPost.title", "author.id", "author.username"])
+      .where("status.status = :status", { status: StatusEnum.PENDING })
+      .getMany();
+  }
+
+  async getDetailsForPost(postID: number) {
+    try {
+      return await this.jobPostsRepository
+        .createQueryBuilder("jobPost")
+        .innerJoin("jobPost.status", "status")
+        .innerJoin("jobPost.level", "level")
+        .innerJoin("jobPost.contractType", "contractType")
+        .innerJoin("jobPost.author", "author")
+        .innerJoin("jobPost.languages", "languages")
+        .select([
+          "jobPost",
+          "level",
+          "contractType",
+          "languages",
+          "author.id",
+          "author.username",
+        ])
+        .where("jobPost.id = :id", { id: postID })
+        .andWhere("status.status = :status", { status: StatusEnum.PENDING })
+        .getOneOrFail();
+    } catch (error) {
+      throw new BadRequestException(
+        "Post with this ID does not exist or does not require verification"
+      );
+    }
+  }
+
+  async updatePostStatus(postID: number, body: UpdatePostStatusDTO) {
+    const { status } = body;
+    try {
+      const post = await this.jobPostsRepository
+        .createQueryBuilder("jobPost")
+        .innerJoin("jobPost.status", "status")
+        .where("jobPost.id = :id", { id: postID })
+        .andWhere("status.status = :status", { status: StatusEnum.PENDING })
+        .getOneOrFail();
+      post.status = <Status>await this.statusRepository.findOneBy({ status });
+      await this.jobPostsRepository.save(post);
+      return {
+        message: "Post status updated",
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        "Post with this ID does not exist or does not require verification"
+      );
     }
   }
 }
