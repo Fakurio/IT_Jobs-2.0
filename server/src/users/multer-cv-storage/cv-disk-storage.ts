@@ -11,12 +11,15 @@ export const CVDiskStorage = diskStorage({
   filename: function (req, file, cb) {
     const authenticatedUser = req.user as User;
     const fileName = `${authenticatedUser.id}-${Date.now()}`;
-    const files = fs.readdirSync(DESTINATION_PATH);
-    for (const file of files) {
-      if (file.split("-")[0] === authenticatedUser.id.toString()) {
-        fs.unlinkSync(`${DESTINATION_PATH}${file}`);
+    if (file.mimetype === "application/pdf") {
+      const files = fs.readdirSync(DESTINATION_PATH);
+      for (const file of files) {
+        if (file.split("-")[0] === authenticatedUser.id.toString()) {
+          fs.unlinkSync(`${DESTINATION_PATH}${file}`);
+        }
       }
     }
+
     cb(null, `${fileName}.pdf`);
   },
 });

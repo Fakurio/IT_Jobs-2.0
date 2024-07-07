@@ -39,7 +39,7 @@ describe("UsersController", () => {
     const userDTOMock = {} as User;
     const cv = {} as Express.Multer.File;
     expect(
-      await controller.updateProfile(userDTOMock, cv, requestMock),
+      await controller.updateProfile(userDTOMock, cv, requestMock)
     ).toEqual(true);
     expect(usersService.updateProfile).toHaveBeenCalledTimes(1);
   });

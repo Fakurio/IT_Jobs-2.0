@@ -1,6 +1,6 @@
 import { CVFileValidationPipe } from "./cv-file-validation.pipe";
 import { Test, TestingModule } from "@nestjs/testing";
-import { BadRequestException } from "@nestjs/common";
+import { UpdateProfileValidationException } from "../../exceptions/update-profile-validation.exception";
 
 describe("CVFileValidationPipe", () => {
   let pipe: CVFileValidationPipe;
@@ -30,7 +30,7 @@ describe("CVFileValidationPipe", () => {
     try {
       pipe.transform(file);
     } catch (error: any) {
-      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error).toBeInstanceOf(UpdateProfileValidationException);
       expect(error.message).toEqual("CV file must be in PDF format");
     }
   });

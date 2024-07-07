@@ -24,14 +24,14 @@ export class ZodValidationPipe implements PipeTransform {
           this.schema.innerType().shape ===
           UpdateProfileSchema.innerType().shape
         ) {
-          throw new UpdateProfileValidationException();
+          throw new UpdateProfileValidationException("Invalid profile data");
         }
       } else {
         if (this.schema.shape === RegisterRequestSchema.shape) {
           throw new BadRequestException("Invalid registration data");
         }
         if (this.schema.shape === AddPostSchema.shape) {
-          throw new AddPostValidationException();
+          throw new AddPostValidationException("Invalid job post data");
         }
         if (this.schema.shape === UpdatePostStatus.shape) {
           throw new BadRequestException(
