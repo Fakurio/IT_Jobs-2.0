@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-export class AddPostValidationException extends HttpException {
-  constructor(message: string) {
+export class PostValidationException extends HttpException {
+  constructor(message: any) {
     super(message, HttpStatus.BAD_REQUEST);
   }
 }

@@ -3,37 +3,34 @@ import {
   BadRequestException,
   PipeTransform,
 } from "@nestjs/common";
-import { ZodEffects, ZodObject } from "zod";
+import { ZodEffects, ZodSchema } from "zod";
 import RegisterRequestSchema from "../dto/register-request.dto";
-import UpdateProfileSchema from "../../users/dto/update-profile.dto";
 import AddPostSchema from "../../job-posts/dto/add-post.dto";
-import { AddPostValidationException } from "../../exceptions/add-post-validation.exception";
+import { PostValidationException } from "../../exceptions/post-validation.exception";
 import { UpdateProfileValidationException } from "../../exceptions/update-profile-validation.exception";
 import UpdatePostStatus from "../../job-posts/dto/update-post-status.dto";
 import { StatusEnum } from "../../entities/status.entity";
+import UpdatePostSchema from "../../job-posts/dto/update-post.dto";
 
 export class ZodValidationPipe implements PipeTransform {
-  constructor(private schema: ZodObject<any> | ZodEffects<any>) {}
+  constructor(private schema: ZodSchema) {}
 
   transform(value: unknown, metadata: ArgumentMetadata) {
     try {
       return this.schema.parse(value);
-    } catch (error) {
+    } catch (error: any) {
       if (this.schema instanceof ZodEffects) {
-        if (
-          this.schema.innerType().shape ===
-          UpdateProfileSchema.innerType().shape
-        ) {
-          throw new UpdateProfileValidationException("Invalid profile data");
-        }
+        // if (this.schema._def.schema === UpdateProfileSchema) {
+        throw new UpdateProfileValidationException("Invalid profile data");
+        // }
       } else {
-        if (this.schema.shape === RegisterRequestSchema.shape) {
+        if (this.schema === RegisterRequestSchema) {
           throw new BadRequestException("Invalid registration data");
         }
-        if (this.schema.shape === AddPostSchema.shape) {
-          throw new AddPostValidationException("Invalid job post data");
+        if (this.schema === AddPostSchema || this.schema === UpdatePostSchema) {
+          throw new PostValidationException("Invalid post data");
         }
-        if (this.schema.shape === UpdatePostStatus.shape) {
+        if (this.schema === UpdatePostStatus) {
           throw new BadRequestException(
             `Allowed status values: ${StatusEnum.ACCEPTED}, ${StatusEnum.REJECTED}`
           );

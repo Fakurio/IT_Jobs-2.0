@@ -11,6 +11,7 @@ import { Status, StatusEnum } from "../entities/status.entity";
 import { Language, LanguageEnum } from "../entities/language.entity";
 import { In, Repository } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
+import { User } from "../entities/user.entity";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -34,16 +35,31 @@ describe("JobPostsService", () => {
     languages: [{ id: 1, name: "JavaScript" }],
   };
   const jobPosts = [
-    { id: 1, title: "Test1", status: StatusEnum.ACCEPTED },
-    { id: 2, title: "Test2", status: StatusEnum.ACCEPTED },
-    { id: 3, title: "Do weryfikacji", status: StatusEnum.PENDING },
+    {
+      id: 1,
+      title: "Test1",
+      status: StatusEnum.ACCEPTED,
+      author: { id: 1, username: "Kamil" },
+    },
+    {
+      id: 2,
+      title: "Test2",
+      status: StatusEnum.ACCEPTED,
+      author: { id: 1, username: "Kamil" },
+    },
+    {
+      id: 3,
+      title: "Do weryfikacji",
+      status: StatusEnum.PENDING,
+      author: { id: 2, username: "Romek" },
+    },
   ];
   const jobPostRepositoryMock = {
     createQueryBuilder: jest.fn(() => {
       return {
         innerJoin: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        where: jest.fn((_, condition) => {
+        where: jest.fn((field: string, condition) => {
           if (condition.status) {
             return {
               getMany: jest.fn(() =>
@@ -54,6 +70,15 @@ describe("JobPostsService", () => {
             };
           }
           if (condition.id) {
+            if (field.startsWith("author.id")) {
+              return {
+                getMany: jest.fn(() =>
+                  Promise.resolve(
+                    jobPosts.filter((post) => post.author.id === condition.id)
+                  )
+                ),
+              };
+            }
             return {
               andWhere: jest.fn(() => {
                 return {
@@ -72,10 +97,16 @@ describe("JobPostsService", () => {
               }),
             };
           }
+          return jest.fn().mockReturnThis();
         }),
       };
     }),
     save: jest.fn((post) => Promise.resolve({ ...post, id: 1 })),
+    findOne: jest.fn((condition) => {
+      return Promise.resolve(
+        jobPosts.filter((post) => post.author.id === condition.where.id)[0]
+      );
+    }),
   };
   const contractTypesRepositoryMock = {
     findOneBy: jest.fn(() => Promise.resolve([])),
@@ -241,6 +272,70 @@ describe("JobPostsService", () => {
       expect(error.message).toEqual(
         "Post with this ID does not exist or does not require verification"
       );
+    }
+  });
+
+  it("should return list of job posts for authenticated user", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    expect(await service.getAuthenticatedUserPosts(user)).toEqual([
+      jobPosts[0],
+      jobPosts[1],
+    ]);
+  });
+
+  it("should return empty list of job posts for authenticated user", async () => {
+    const user = {
+      id: 3,
+      username: "Wojtek",
+    } as User;
+    expect(await service.getAuthenticatedUserPosts(user)).toEqual([]);
+  });
+
+  it("should update authenticated user job post", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    const dto = {
+      companyName: "Test company",
+    };
+    expect(
+      await service.updateAuthenticatedUserPost(1, dto, undefined, user)
+    ).toEqual({
+      message:
+        "After moderator approval, your changes will be visible to everyone",
+    });
+    expect(jobPostsRepository.save).toHaveBeenCalledWith({
+      id: 1,
+      location: undefined,
+      author: { ...user },
+      companyName: dto.companyName,
+      languages: undefined,
+      level: undefined,
+      contractType: undefined,
+      title: "Test1",
+      status: StatusEnum.ACCEPTED,
+      salary: undefined,
+      description: undefined,
+    });
+  });
+
+  it("should throw error while updating post => post doesnt exist", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    const dto = {
+      companyName: "Test company",
+    };
+    try {
+      await service.updateAuthenticatedUserPost(6, dto, undefined, user);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("Post with this ID does not exist");
     }
   });
 });

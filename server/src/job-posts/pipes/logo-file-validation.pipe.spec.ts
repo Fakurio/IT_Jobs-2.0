@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { LogoFileValidationPipe } from "./logo-file-validation.pipe";
 import { BadRequestException } from "@nestjs/common";
-import { AddPostValidationException } from "../../exceptions/add-post-validation.exception";
+import { PostValidationException } from "../../exceptions/post-validation.exception";
 
 describe("LogoFileValidationPipe", () => {
   let pipe: LogoFileValidationPipe;
@@ -31,7 +31,7 @@ describe("LogoFileValidationPipe", () => {
     try {
       pipe.transform(file);
     } catch (error: any) {
-      expect(error).toBeInstanceOf(AddPostValidationException);
+      expect(error).toBeInstanceOf(PostValidationException);
       expect(error.message).toEqual(
         "Logo file must be in JPG, JPEG, PNG or SVG format"
       );
@@ -56,7 +56,7 @@ describe("LogoFileValidationPipe", () => {
     try {
       pipe.transform(file);
     } catch (error: any) {
-      expect(error).toBeInstanceOf(AddPostValidationException);
+      expect(error).toBeInstanceOf(PostValidationException);
       expect(error.message).toEqual("Logo file size must be less than 4MB");
     }
   });

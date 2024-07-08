@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
-import { AddPostValidationException } from "../../exceptions/add-post-validation.exception";
+import { PostValidationException } from "../../exceptions/post-validation.exception";
 
 const ALLOWED_FORMATS = ["image/jpg", "image/png", "image/jpeg", "image/svg"];
 const MAX_FILE_SIZE = 1024 * 1024 * 4; // 4MB
@@ -11,14 +11,12 @@ export class LogoFileValidationPipe implements PipeTransform {
       throw new BadRequestException("Logo not uploaded");
     }
     if (!ALLOWED_FORMATS.includes(file.mimetype)) {
-      throw new AddPostValidationException(
+      throw new PostValidationException(
         "Logo file must be in JPG, JPEG, PNG or SVG format"
       );
     }
     if (file.size > MAX_FILE_SIZE) {
-      throw new AddPostValidationException(
-        "Logo file size must be less than 4MB"
-      );
+      throw new PostValidationException("Logo file size must be less than 4MB");
     }
     return file;
   }

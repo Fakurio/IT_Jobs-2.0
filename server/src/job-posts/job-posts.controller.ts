@@ -29,6 +29,8 @@ import { RolesGuard } from "../auth/guards/roles.guard";
 import UpdatePostStatus, {
   UpdatePostStatusDTO,
 } from "./dto/update-post-status.dto";
+import UpdatePostSchema, { UpdatePostDTO } from "./dto/update-post.dto";
+import { UpdateLogoFileValidationPipe } from "./pipes/update-logo-file-validation.pipe";
 
 @Controller("job-posts")
 export class JobPostsController {
@@ -78,8 +80,37 @@ export class JobPostsController {
   @Put("/pending/:id/status")
   updatePostStatus(
     @Param("id", ParseIntPipe) postID: number,
-    @Body(new ZodValidationPipe(UpdatePostStatus)) body: UpdatePostStatusDTO
+    @Body(new ZodValidationPipe(UpdatePostStatus))
+    updatePostStatuDTO: UpdatePostStatusDTO
   ) {
-    return this.jobPostsService.updatePostStatus(postID, body);
+    return this.jobPostsService.updatePostStatus(postID, updatePostStatuDTO);
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/me")
+  getAuthenticatedUserPosts(@Req() request: Request) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.getAuthenticatedUserPosts(authenticatedUser);
+  }
+
+  @UseFilters(FileUploadFilter)
+  @UseInterceptors(FileInterceptor("logo", { storage: LogoDiskStorage }))
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Put("/:id")
+  updateAuthenticatedUserPost(
+    @Param("id", ParseIntPipe) postID: number,
+    @Body(new ZodValidationPipe(UpdatePostSchema)) updatePostDTO: UpdatePostDTO,
+    @Req() request: Request,
+    @UploadedFile(new UpdateLogoFileValidationPipe()) logo: Express.Multer.File
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.updateAuthenticatedUserPost(
+      postID,
+      updatePostDTO,
+      logo,
+      authenticatedUser
+    );
   }
 }

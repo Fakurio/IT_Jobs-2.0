@@ -6,10 +6,10 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { unlinkSync } from "fs";
-import { AddPostValidationException } from "../exceptions/add-post-validation.exception";
+import { PostValidationException } from "../exceptions/post-validation.exception";
 import { UpdateProfileValidationException } from "../exceptions/update-profile-validation.exception";
 
-@Catch(AddPostValidationException, UpdateProfileValidationException)
+@Catch(PostValidationException, UpdateProfileValidationException)
 export class FileUploadFilter implements ExceptionFilter {
   catch(exception: BadRequestException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -17,10 +17,12 @@ export class FileUploadFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
 
-    unlinkSync(request.file!.path);
+    if (request.file) {
+      unlinkSync(request.file.path);
+    }
 
     response.status(status).json({
-      message: exception.message,
+      message: exception.getResponse(),
       error: "Bad Request",
       statusCode: status,
     });

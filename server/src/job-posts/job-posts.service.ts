@@ -13,6 +13,9 @@ import { Level } from "../entities/level.entity";
 import { User } from "../entities/user.entity";
 import { Language } from "../entities/language.entity";
 import { UpdatePostStatusDTO } from "./dto/update-post-status.dto";
+import { UpdatePostDTO } from "./dto/update-post.dto";
+import { unlinkSync } from "fs";
+import { join } from "path";
 
 @Injectable()
 export class JobPostsService {
@@ -143,5 +146,69 @@ export class JobPostsService {
         "Post with this ID does not exist or does not require verification"
       );
     }
+  }
+
+  async getAuthenticatedUserPosts(authenticatedUser: User) {
+    return await this.jobPostsRepository
+      .createQueryBuilder("jobPost")
+      .innerJoin("jobPost.level", "level")
+      .innerJoin("jobPost.contractType", "contractType")
+      .innerJoin("jobPost.author", "author")
+      .innerJoin("jobPost.languages", "languages")
+      .innerJoin("jobPost.status", "status")
+      .select(["jobPost", "level", "contractType", "languages", "status"])
+      .where("author.id = :id", { id: authenticatedUser.id })
+      .getMany();
+  }
+
+  async updateAuthenticatedUserPost(
+    postID: number,
+    updatePostDTO: UpdatePostDTO,
+    logo: Express.Multer.File | undefined,
+    user: User
+  ) {
+    const post = await this.jobPostsRepository.findOne({
+      relations: ["author"],
+      where: { id: postID },
+    });
+    if (!post) {
+      throw new BadRequestException("Post with this ID does not exist");
+    }
+    if (post.author.id !== user.id) {
+      throw new BadRequestException("You are not the author of this post");
+    }
+
+    if (logo) {
+      const currentLogo = post.logo;
+      unlinkSync(join(process.cwd(), `logos/${currentLogo}`));
+      post.logo = logo.filename;
+    }
+    post.companyName = updatePostDTO.companyName || post.companyName;
+    post.title = updatePostDTO.title || post.title;
+    post.salary = updatePostDTO.salary || post.salary;
+    post.description = updatePostDTO.description || post.description;
+    post.location = updatePostDTO.location || post.location;
+    if (updatePostDTO.contractType) {
+      post.contractType = <ContractType>(
+        await this.contractTypesRepository.findOneBy({
+          type: updatePostDTO.contractType,
+        })
+      );
+    }
+    if (updatePostDTO.level) {
+      post.level = <Level>await this.levelsRepository.findOneBy({
+        level: updatePostDTO.level,
+      });
+    }
+    if (updatePostDTO.languages) {
+      post.languages = await this.languagesRepository.findBy({
+        language: In(updatePostDTO.languages),
+      });
+    }
+    await this.jobPostsRepository.save(post);
+    return {
+      message:
+        "After moderator approval, your changes will be visible to everyone",
+    };
   }
 }
