@@ -16,6 +16,7 @@ import { UpdatePostStatusDTO } from "./dto/update-post-status.dto";
 import { UpdatePostDTO } from "./dto/update-post.dto";
 import { unlinkSync } from "fs";
 import { join } from "path";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class JobPostsService {
@@ -29,7 +30,8 @@ export class JobPostsService {
     @InjectRepository(Status)
     private statusRepository: Repository<Status>,
     @InjectRepository(Language)
-    private languagesRepository: Repository<Language>
+    private languagesRepository: Repository<Language>,
+    private usersService: UsersService
   ) {}
 
   async getAll(): Promise<JobPost[]> {
@@ -240,5 +242,25 @@ export class JobPostsService {
     return {
       message: "Post deleted",
     };
+  }
+
+  async addPostToFavourite(postID: number, authenticatedUser: User) {
+    const post = await this.jobPostsRepository.findOne({
+      where: { id: postID },
+    });
+    if (!post) {
+      throw new BadRequestException("Post with this ID does not exist");
+    }
+    try {
+      await this.usersService.addPostToFavourites(authenticatedUser, post);
+      return {
+        message: "Post added to favourites",
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        "Adding post to favourites failed"
+      );
+    }
   }
 }

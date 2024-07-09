@@ -10,6 +10,7 @@ import * as fs from "node:fs";
 import * as process from "node:process";
 import { join } from "path";
 import { response } from "express";
+import { JobPost } from "src/entities/job-post.entity";
 
 describe("UsersService", () => {
   let service: UsersService;
@@ -17,17 +18,25 @@ describe("UsersService", () => {
   let rolesRepository: Repository<Role>;
   let hashService: HashService;
 
+  let users = [{ id: 1, username: "Kamil", favouritePosts: [] }];
   let usersRepositoryMock = {
     save: jest.fn((user) => Promise.resolve({ id: 1, ...user })),
-    findOne: jest.fn(() =>
-      Promise.resolve({
-        id: 1,
-        email: "kamil@gmail.com",
-        password: "12345678",
-        username: "Kamil",
-        roles: [],
-      }),
-    ),
+    findOne: jest.fn((condition) => {
+      if (condition.where.email) {
+        return Promise.resolve({
+          id: 1,
+          email: "kamil@gmail.com",
+          password: "12345678",
+          username: "Kamil",
+          roles: [],
+        });
+      }
+      if (condition.where.id) {
+        return Promise.resolve(
+          users.filter((user) => user.id === condition.where.id)[0]
+        );
+      }
+    }),
     update: jest.fn((user, value) => Promise.resolve({ ...user, value })),
   };
   let rolesRepositoryMock = {
@@ -36,7 +45,7 @@ describe("UsersService", () => {
   let hashServiceMock = {
     hashPassword: jest.fn((password) => Promise.resolve(password)),
     verifyPassword: jest.fn((password, hash) =>
-      Promise.resolve(password === hash),
+      Promise.resolve(password === hash)
     ),
   };
 
@@ -131,7 +140,7 @@ describe("UsersService", () => {
       {
         email: "kamil@admin.pl",
       },
-      { username: "Fakurio" },
+      { username: "Fakurio" }
     );
   });
 
@@ -158,11 +167,11 @@ describe("UsersService", () => {
       {
         email: "kamil@admin.pl",
       },
-      { password: "mocne_hasło" },
+      { password: "mocne_hasło" }
     );
     expect(hashService.verifyPassword).toHaveBeenCalledWith(
       "12345678",
-      "12345678",
+      "12345678"
     );
     expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
     expect(hashService.hashPassword).toHaveBeenCalledWith("mocne_hasło");
@@ -192,7 +201,7 @@ describe("UsersService", () => {
       expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
       expect(hashService.verifyPassword).toHaveBeenCalledWith(
         "987877333",
-        "12345678",
+        "12345678"
       );
     }
   });
@@ -222,7 +231,7 @@ describe("UsersService", () => {
       {
         email: "kamil@admin.pl",
       },
-      { cv: "moje-cv.pdf" },
+      { cv: "moje-cv.pdf" }
     );
   });
 
@@ -285,11 +294,11 @@ describe("UsersService", () => {
       .spyOn(fs, "createReadStream")
       .mockImplementationOnce(createReadStreamMock as any);
     expect(service.getAuthenticatedUserCV(requestMock)).toBeInstanceOf(
-      StreamableFile,
+      StreamableFile
     );
     expect(fs.createReadStream).toHaveBeenCalledTimes(1);
     expect(fs.createReadStream).toHaveBeenCalledWith(
-      join(process.cwd(), `cv-files/${requestMock.user.cv}`),
+      join(process.cwd(), `cv-files/${requestMock.user.cv}`)
     );
   });
 
@@ -310,7 +319,21 @@ describe("UsersService", () => {
     service.previewAuthenticatedUserCV(requestMock, responseMock);
     expect(responseMock.sendFile).toHaveBeenCalledTimes(1);
     expect(responseMock.sendFile).toHaveBeenCalledWith(
-      join(process.cwd(), `cv-files/${requestMock.user.cv}`),
+      join(process.cwd(), `cv-files/${requestMock.user.cv}`)
     );
+  });
+
+  it("should add post to user's favourite posts", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    const post = {
+      title: "New post",
+    } as JobPost;
+    expect(await service.addPostToFavourites(user, post)).toEqual({
+      ...user,
+      favouritePosts: [post],
+    });
   });
 });

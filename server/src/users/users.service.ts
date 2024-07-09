@@ -15,6 +15,7 @@ import { HashService } from "../auth/hash/hash.service";
 import { createReadStream } from "fs";
 import { join } from "path";
 import * as process from "node:process";
+import { JobPost } from "src/entities/job-post.entity";
 
 @Injectable()
 export class UsersService {
@@ -23,7 +24,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private rolesRepository: Repository<Role>,
-    private hashService: HashService,
+    private hashService: HashService
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -35,7 +36,7 @@ export class UsersService {
 
   async addUser(
     registerRequestDTO: RegisterRequestDto,
-    role: RoleTypes,
+    role: RoleTypes
   ): Promise<User> {
     const newUser = new User();
     newUser.email = registerRequestDTO.email;
@@ -50,7 +51,7 @@ export class UsersService {
   async updateProfile(
     request: Request,
     userDTO: UpdateProfileDTO,
-    cv: Express.Multer.File,
+    cv: Express.Multer.File
   ) {
     const { oldPassword, username, newPassword } = userDTO;
     if (!username && !oldPassword && !cv && !newPassword) {
@@ -85,7 +86,7 @@ export class UsersService {
       throw new BadRequestException("You haven't uploaded CV");
     }
     const cv = createReadStream(
-      join(process.cwd(), `cv-files/${authenticatedUser.cv}`),
+      join(process.cwd(), `cv-files/${authenticatedUser.cv}`)
     );
     return new StreamableFile(cv);
   }
@@ -96,8 +97,17 @@ export class UsersService {
       throw new BadRequestException("You haven't uploaded CV");
     }
     return response.sendFile(
-      join(process.cwd(), `cv-files/${authenticatedUser.cv}`),
+      join(process.cwd(), `cv-files/${authenticatedUser.cv}`)
     );
+  }
+
+  async addPostToFavourites(authenticatedUser: User, post: JobPost) {
+    const userWithFavourites = await this.usersRepository.findOne({
+      relations: ["favouritePosts"],
+      where: { id: authenticatedUser.id },
+    });
+    userWithFavourites!.favouritePosts.push(post);
+    return await this.usersRepository.save(userWithFavourites!);
   }
 
   private async updateUsername(authenticatedUser: User, username: string) {
@@ -105,18 +115,18 @@ export class UsersService {
       { email: authenticatedUser.email },
       {
         username: username,
-      },
+      }
     );
   }
 
   private async updatePassword(
     authenticatedUser: User,
     oldPassword: string,
-    newPassword: string,
+    newPassword: string
   ) {
     const passwordCheck = await this.hashService.verifyPassword(
       oldPassword,
-      authenticatedUser.password,
+      authenticatedUser.password
     );
     if (!passwordCheck) {
       throw new BadRequestException("Invalid old password");
@@ -124,7 +134,7 @@ export class UsersService {
     const passwordHash = await this.hashService.hashPassword(newPassword);
     await this.usersRepository.update(
       { email: authenticatedUser.email },
-      { password: passwordHash },
+      { password: passwordHash }
     );
   }
 
@@ -134,7 +144,7 @@ export class UsersService {
       { email: authenticatedUser.email },
       {
         cv: filename,
-      },
+      }
     );
   }
 }

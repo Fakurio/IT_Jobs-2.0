@@ -32,4 +32,8 @@ export class User {
 
   @OneToMany(() => JobPost, (jobPost) => jobPost.author)
   jobPosts!: JobPost[];
+
+  @ManyToMany(() => JobPost, (jobPost) => jobPost.favouritedBy)
+  @JoinTable({ name: "favourite_posts" })
+  favouritePosts!: JobPost[];
 }

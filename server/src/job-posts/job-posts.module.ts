@@ -8,6 +8,7 @@ import { Level } from "../entities/level.entity";
 import { Language } from "../entities/language.entity";
 import { Status } from "../entities/status.entity";
 import { AuthModule } from "../auth/auth.module";
+import { UsersModule } from "src/users/users.module";
 
 @Module({
   controllers: [JobPostsController],
@@ -15,6 +16,7 @@ import { AuthModule } from "../auth/auth.module";
   imports: [
     AuthModule,
     TypeOrmModule.forFeature([JobPost, ContractType, Level, Status, Language]),
+    UsersModule,
   ],
 })
 export class JobPostsModule {}

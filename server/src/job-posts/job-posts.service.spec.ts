@@ -13,6 +13,7 @@ import { In, Repository } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 import { User } from "../entities/user.entity";
 import * as fs from "fs";
+import { UsersService } from "../users/users.service";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -21,6 +22,7 @@ describe("JobPostsService", () => {
   let levelsRepository: Repository<Level>;
   let statusRepository: Repository<Status>;
   let languagesRepository: Repository<Language>;
+  let usersService: UsersService;
 
   const jobPostMock = {
     id: 1,
@@ -105,6 +107,9 @@ describe("JobPostsService", () => {
   const languagesRepositoryMock = {
     findBy: jest.fn(() => Promise.resolve([])),
   };
+  const usersServiceMock = {
+    addPostToFavourites: jest.fn(() => Promise.resolve(true)),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -124,6 +129,10 @@ describe("JobPostsService", () => {
           provide: getRepositoryToken(Language),
           useValue: languagesRepositoryMock,
         },
+        {
+          provide: UsersService,
+          useValue: usersServiceMock,
+        },
       ],
     }).compile();
 
@@ -141,6 +150,7 @@ describe("JobPostsService", () => {
     languagesRepository = module.get<Repository<Language>>(
       getRepositoryToken(Language)
     );
+    usersService = module.get<UsersService>(UsersService);
     jobPosts = [
       {
         id: 1,
@@ -186,6 +196,7 @@ describe("JobPostsService", () => {
       cv: "cv.pdf",
       roles: [],
       jobPosts: [],
+      favouritePosts: [],
     };
     const dto = {
       title: jobPostMock.title,
@@ -379,5 +390,19 @@ describe("JobPostsService", () => {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toEqual("You are not the author of this post");
     }
+  });
+
+  it("should add post to authenticated user favourites", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    expect(await service.addPostToFavourite(1, user)).toEqual({
+      message: "Post added to favourites",
+    });
+    expect(usersService.addPostToFavourites).toHaveBeenCalledWith(
+      user,
+      jobPosts[0]
+    );
   });
 });

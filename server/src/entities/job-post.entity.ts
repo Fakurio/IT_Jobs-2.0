@@ -50,4 +50,7 @@ export class JobPost {
   @ManyToMany(() => Language, (language) => language.jobPosts)
   @JoinTable({ name: "job_posts_languages" })
   languages!: Language[];
+
+  @ManyToMany(() => User, (user) => user.favouritePosts)
+  favouritedBy!: User[];
 }
