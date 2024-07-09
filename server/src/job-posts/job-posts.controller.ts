@@ -41,6 +41,21 @@ export class JobPostsController {
     return this.jobPostsService.getAll();
   }
 
+  @Get("/levels")
+  getLevels() {
+    return this.jobPostsService.getLevels();
+  }
+
+  @Get("/contract-types")
+  getContractTypes() {
+    return this.jobPostsService.getContractTypes();
+  }
+
+  @Get("/languages")
+  getLanguages() {
+    return this.jobPostsService.getLanguages();
+  }
+
   @UseFilters(FileUploadFilter)
   @UseInterceptors(FileInterceptor("logo", { storage: LogoDiskStorage }))
   @UseInterceptors(CheckCsrfTokenInterceptor)

@@ -52,6 +52,18 @@ export class JobPostsService {
       .getMany();
   }
 
+  async getLevels() {
+    return await this.levelsRepository.find();
+  }
+
+  async getContractTypes() {
+    return await this.contractTypesRepository.find();
+  }
+
+  async getLanguages() {
+    return await this.languagesRepository.find();
+  }
+
   async addPost(
     authenticatedUser: User,
     addPostDto: AddPostDTO,
