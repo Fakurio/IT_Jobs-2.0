@@ -19,6 +19,7 @@ describe("JobPostsController", () => {
     updatePostStatus: jest.fn((id, body) =>
       Promise.resolve({ id: id, status: body.status })
     ),
+    deleteAuthenticatedUserPost: jest.fn((id, user) => Promise.resolve(true)),
   };
 
   beforeEach(async () => {
@@ -79,5 +80,20 @@ describe("JobPostsController", () => {
     });
     expect(jobPostsService.updatePostStatus).toHaveBeenCalledTimes(1);
     expect(jobPostsService.updatePostStatus).toHaveBeenCalledWith(1, body);
+  });
+
+  it("should call deleteAuthenticatedUserPost method from service", async () => {
+    const user = {
+      username: "Kamil",
+    } as User;
+    const request = {
+      user: user,
+    } as any;
+    expect(await controller.deleteAuthenticatedUserPost(1, request)).toEqual(
+      true
+    );
+    expect(jobPostsService.deleteAuthenticatedUserPost).toHaveBeenCalledTimes(
+      1
+    );
   });
 });

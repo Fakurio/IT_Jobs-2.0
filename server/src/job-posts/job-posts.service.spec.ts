@@ -12,6 +12,7 @@ import { Language, LanguageEnum } from "../entities/language.entity";
 import { In, Repository } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 import { User } from "../entities/user.entity";
+import * as fs from "fs";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -34,26 +35,7 @@ describe("JobPostsService", () => {
     author: { id: 1, username: "Kamil" },
     languages: [{ id: 1, name: "JavaScript" }],
   };
-  const jobPosts = [
-    {
-      id: 1,
-      title: "Test1",
-      status: StatusEnum.ACCEPTED,
-      author: { id: 1, username: "Kamil" },
-    },
-    {
-      id: 2,
-      title: "Test2",
-      status: StatusEnum.ACCEPTED,
-      author: { id: 1, username: "Kamil" },
-    },
-    {
-      id: 3,
-      title: "Do weryfikacji",
-      status: StatusEnum.PENDING,
-      author: { id: 2, username: "Romek" },
-    },
-  ];
+  let jobPosts;
   const jobPostRepositoryMock = {
     createQueryBuilder: jest.fn(() => {
       return {
@@ -104,9 +86,12 @@ describe("JobPostsService", () => {
     save: jest.fn((post) => Promise.resolve({ ...post, id: 1 })),
     findOne: jest.fn((condition) => {
       return Promise.resolve(
-        jobPosts.filter((post) => post.author.id === condition.where.id)[0]
+        jobPosts.filter((post) => post.id === condition.where.id)[0]
       );
     }),
+    delete: jest.fn((id) =>
+      Promise.resolve(jobPosts.filter((post) => post.id !== id))
+    ),
   };
   const contractTypesRepositoryMock = {
     findOneBy: jest.fn(() => Promise.resolve([])),
@@ -156,6 +141,26 @@ describe("JobPostsService", () => {
     languagesRepository = module.get<Repository<Language>>(
       getRepositoryToken(Language)
     );
+    jobPosts = [
+      {
+        id: 1,
+        title: "Test1",
+        status: StatusEnum.ACCEPTED,
+        author: { id: 1, username: "Kamil" },
+      },
+      {
+        id: 2,
+        title: "Test2",
+        status: StatusEnum.ACCEPTED,
+        author: { id: 1, username: "Kamil" },
+      },
+      {
+        id: 3,
+        title: "Do weryfikacji",
+        status: StatusEnum.PENDING,
+        author: { id: 2, username: "Romek" },
+      },
+    ];
   });
   afterEach(() => {
     jest.clearAllMocks();
@@ -336,6 +341,43 @@ describe("JobPostsService", () => {
     } catch (error: any) {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toEqual("Post with this ID does not exist");
+    }
+  });
+
+  it("should delete authenticated user job post", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    jest.spyOn(fs, "unlinkSync").mockReturnValue();
+    expect(await service.deleteAuthenticatedUserPost(1, user)).toEqual({
+      message: "Post deleted",
+    });
+  });
+
+  it("should throw error while deleting post => post doesnt exist", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    try {
+      await service.deleteAuthenticatedUserPost(5, user);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("Post with this ID does not exist");
+    }
+  });
+
+  it("should throw error while deleting post => you are not an author", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    try {
+      await service.deleteAuthenticatedUserPost(3, user);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("You are not the author of this post");
     }
   });
 });

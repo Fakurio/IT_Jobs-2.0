@@ -11,6 +11,7 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  Delete,
 } from "@nestjs/common";
 import { JobPostsService } from "./job-posts.service";
 import AddPostSchema, { AddPostDTO } from "./dto/add-post.dto";
@@ -125,6 +126,20 @@ export class JobPostsController {
       postID,
       updatePostDTO,
       logo,
+      authenticatedUser
+    );
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Delete("/:id")
+  deleteAuthenticatedUserPost(
+    @Param("id", ParseIntPipe) postID: number,
+    @Req() request: Request
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.deleteAuthenticatedUserPost(
+      postID,
       authenticatedUser
     );
   }

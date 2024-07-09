@@ -223,4 +223,22 @@ export class JobPostsService {
         "After moderator approval, your changes will be visible to everyone",
     };
   }
+
+  async deleteAuthenticatedUserPost(postID: number, user: User) {
+    const post = await this.jobPostsRepository.findOne({
+      relations: ["author"],
+      where: { id: postID },
+    });
+    if (!post) {
+      throw new BadRequestException("Post with this ID does not exist");
+    }
+    if (post.author.id !== user.id) {
+      throw new BadRequestException("You are not the author of this post");
+    }
+    unlinkSync(join(process.cwd(), `logos/${post.logo}`));
+    await this.jobPostsRepository.delete(postID);
+    return {
+      message: "Post deleted",
+    };
+  }
 }
