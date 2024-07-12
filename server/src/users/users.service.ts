@@ -110,6 +110,20 @@ export class UsersService {
     return await this.usersRepository.save(userWithFavourites!);
   }
 
+  async getFavouritePosts(authenticatedUser: User) {
+    const userWithFavourites = await this.usersRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.favouritePosts", "favouritePosts")
+      .innerJoinAndSelect("favouritePosts.level", "level")
+      .innerJoinAndSelect("favouritePosts.contractType", "contractType")
+      .innerJoinAndSelect("favouritePosts.languages", "languages")
+      .innerJoin("favouritePosts.author", "author")
+      .addSelect(["author.id", "author.username"])
+      .where("user.id = :id", { id: authenticatedUser.id })
+      .getOne();
+    return userWithFavourites!.favouritePosts;
+  }
+
   private async updateUsername(authenticatedUser: User, username: string) {
     await this.usersRepository.update(
       { email: authenticatedUser.email },

@@ -3,7 +3,7 @@ import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Role, RoleTypes } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
-import { Repository } from "typeorm";
+import { Repository, createQueryBuilder } from "typeorm";
 import { HashService } from "../auth/hash/hash.service";
 import { BadRequestException, StreamableFile } from "@nestjs/common";
 import * as fs from "node:fs";
@@ -18,7 +18,7 @@ describe("UsersService", () => {
   let rolesRepository: Repository<Role>;
   let hashService: HashService;
 
-  let users = [{ id: 1, username: "Kamil", favouritePosts: [] }];
+  let users: any[];
   let usersRepositoryMock = {
     save: jest.fn((user) => Promise.resolve({ id: 1, ...user })),
     findOne: jest.fn((condition) => {
@@ -38,6 +38,23 @@ describe("UsersService", () => {
       }
     }),
     update: jest.fn((user, value) => Promise.resolve({ ...user, value })),
+    createQueryBuilder: jest.fn(() => {
+      return {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        where: jest.fn((_, condition) => {
+          return {
+            getOne: jest.fn(() => {
+              return Promise.resolve(
+                users.filter((user) => user.id === condition.id)[0]
+              );
+            }),
+          };
+        }),
+      };
+    }),
   };
   let rolesRepositoryMock = {
     findBy: jest.fn(() => Promise.resolve([])),
@@ -72,6 +89,16 @@ describe("UsersService", () => {
     usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
     rolesRepository = module.get<Repository<Role>>(getRepositoryToken(Role));
     hashService = module.get<HashService>(HashService);
+    users = [
+      {
+        id: 1,
+        username: "Kamil",
+        favouritePosts: [
+          { id: 1, title: "Junior Java" },
+          { id: 2, title: "Mid Java" },
+        ],
+      },
+    ];
   });
   afterEach(() => {
     jest.clearAllMocks();
@@ -329,11 +356,27 @@ describe("UsersService", () => {
       username: "Kamil",
     } as User;
     const post = {
+      id: 3,
       title: "New post",
     } as JobPost;
     expect(await service.addPostToFavourites(user, post)).toEqual({
       ...user,
-      favouritePosts: [post],
+      favouritePosts: [
+        { id: 1, title: "Junior Java" },
+        { id: 2, title: "Mid Java" },
+        post,
+      ],
     });
+  });
+
+  it("should return authenticated user's favourite posts", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    expect(await service.getFavouritePosts(user)).toEqual([
+      { id: 1, title: "Junior Java" },
+      { id: 2, title: "Mid Java" },
+    ]);
   });
 });

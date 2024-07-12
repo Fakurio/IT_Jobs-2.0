@@ -263,4 +263,13 @@ export class JobPostsService {
       );
     }
   }
+
+  async getFavouritePosts(authenticatedUser: User) {
+    try {
+      return await this.usersService.getFavouritePosts(authenticatedUser);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException("Failed to get favourite posts");
+    }
+  }
 }

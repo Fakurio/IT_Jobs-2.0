@@ -154,4 +154,12 @@ export class JobPostsController {
     const authenticatedUser = request.user as User;
     return this.jobPostsService.addPostToFavourite(postID, authenticatedUser);
   }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/favourite")
+  getFavouritePosts(@Req() request: Request) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.getFavouritePosts(authenticatedUser);
+  }
 }

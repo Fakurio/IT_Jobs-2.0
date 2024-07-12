@@ -109,6 +109,7 @@ describe("JobPostsService", () => {
   };
   const usersServiceMock = {
     addPostToFavourites: jest.fn(() => Promise.resolve(true)),
+    getFavouritePosts: jest.fn((user) => Promise.resolve(true)),
   };
 
   beforeEach(async () => {
@@ -404,5 +405,14 @@ describe("JobPostsService", () => {
       user,
       jobPosts[0]
     );
+  });
+
+  it("should get authenticated user favourite posts", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    expect(await service.getFavouritePosts(user)).toEqual(true);
+    expect(usersService.getFavouritePosts).toHaveBeenCalledWith(user);
   });
 });

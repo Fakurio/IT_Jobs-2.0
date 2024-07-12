@@ -21,6 +21,7 @@ describe("JobPostsController", () => {
     ),
     deleteAuthenticatedUserPost: jest.fn((id, user) => Promise.resolve(true)),
     addPostToFavourite: jest.fn((id, user) => Promise.resolve(true)),
+    getFavouritePosts: jest.fn((user) => Promise.resolve(true)),
   };
 
   beforeEach(async () => {
@@ -107,5 +108,16 @@ describe("JobPostsController", () => {
     } as any;
     expect(await controller.addPostToFavourite(1, request)).toEqual(true);
     expect(jobPostsService.addPostToFavourite).toHaveBeenCalledWith(1, user);
+  });
+
+  it("should call getFavouritePosts method from service", async () => {
+    const user = {
+      username: "Kamil",
+    } as User;
+    const request = {
+      user: user,
+    } as any;
+    expect(await controller.getFavouritePosts(request)).toEqual(true);
+    expect(jobPostsService.getFavouritePosts).toHaveBeenCalledWith(user);
   });
 });
