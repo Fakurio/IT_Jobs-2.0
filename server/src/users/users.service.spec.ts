@@ -20,7 +20,13 @@ describe("UsersService", () => {
 
   let users: any[];
   let usersRepositoryMock = {
-    save: jest.fn((user) => Promise.resolve({ id: 1, ...user })),
+    save: jest.fn((user) => {
+      if (user.favouritePosts) {
+        users[0] = user;
+        return;
+      }
+      return Promise.resolve({ id: 1, ...user });
+    }),
     findOne: jest.fn((condition) => {
       if (condition.where.email) {
         return Promise.resolve({
@@ -359,14 +365,17 @@ describe("UsersService", () => {
       id: 3,
       title: "New post",
     } as JobPost;
-    expect(await service.addPostToFavourites(user, post)).toEqual({
-      ...user,
-      favouritePosts: [
-        { id: 1, title: "Junior Java" },
-        { id: 2, title: "Mid Java" },
-        post,
-      ],
-    });
+    await service.addPostToFavourites(user, post);
+    expect(users).toEqual([
+      {
+        ...user,
+        favouritePosts: [
+          { id: 1, title: "Junior Java" },
+          { id: 2, title: "Mid Java" },
+          post,
+        ],
+      },
+    ]);
   });
 
   it("should return authenticated user's favourite posts", async () => {
@@ -378,5 +387,41 @@ describe("UsersService", () => {
       { id: 1, title: "Junior Java" },
       { id: 2, title: "Mid Java" },
     ]);
+  });
+
+  it("should return empty array -> user has no favourite posts", async () => {
+    const user = {
+      id: 2,
+      username: "Fakurio",
+    } as User;
+    expect(await service.getFavouritePosts(user)).toEqual([]);
+  });
+
+  it("should delete post from user's favourite posts", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    await service.deletePostFromFavourite(1, user);
+    expect(users).toEqual([
+      {
+        id: 1,
+        username: "Kamil",
+        favouritePosts: [{ id: 2, title: "Mid Java" }],
+      },
+    ]);
+  });
+
+  it("should throw error -> post not found in favourites", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    try {
+      await service.deletePostFromFavourite(5, user);
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toEqual("Post not found in favourites");
+    }
   });
 });

@@ -121,7 +121,24 @@ export class UsersService {
       .addSelect(["author.id", "author.username"])
       .where("user.id = :id", { id: authenticatedUser.id })
       .getOne();
-    return userWithFavourites!.favouritePosts;
+    if (!userWithFavourites) {
+      return [];
+    }
+    return userWithFavourites.favouritePosts;
+  }
+
+  async deletePostFromFavourite(postID: number, authenticatedUser: User) {
+    const userWithFavourites = await this.usersRepository.findOne({
+      relations: ["favouritePosts"],
+      where: { id: authenticatedUser.id },
+    });
+    const preDeleteLenght = userWithFavourites!.favouritePosts.length;
+    userWithFavourites!.favouritePosts =
+      userWithFavourites!.favouritePosts.filter((post) => post.id !== postID);
+    if (preDeleteLenght === userWithFavourites!.favouritePosts.length) {
+      throw new BadRequestException("Post not found in favourites");
+    }
+    return await this.usersRepository.save(userWithFavourites!);
   }
 
   private async updateUsername(authenticatedUser: User, username: string) {

@@ -132,20 +132,6 @@ export class JobPostsController {
 
   @UseInterceptors(CheckCsrfTokenInterceptor)
   @UseGuards(IsAuthenticated)
-  @Delete("/:id")
-  deleteAuthenticatedUserPost(
-    @Param("id", ParseIntPipe) postID: number,
-    @Req() request: Request
-  ) {
-    const authenticatedUser = request.user as User;
-    return this.jobPostsService.deleteAuthenticatedUserPost(
-      postID,
-      authenticatedUser
-    );
-  }
-
-  @UseInterceptors(CheckCsrfTokenInterceptor)
-  @UseGuards(IsAuthenticated)
   @Post("/favourite")
   addPostToFavourite(
     @Body("id", ParseIntPipe) postID: number,
@@ -161,5 +147,33 @@ export class JobPostsController {
   getFavouritePosts(@Req() request: Request) {
     const authenticatedUser = request.user as User;
     return this.jobPostsService.getFavouritePosts(authenticatedUser);
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Delete("/favourite")
+  deletePostFromFavourite(
+    @Body("id", ParseIntPipe) postID: number,
+    @Req() request: Request
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.deletePostFromFavourite(
+      postID,
+      authenticatedUser
+    );
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Delete("/:id")
+  deleteAuthenticatedUserPost(
+    @Param("id", ParseIntPipe) postID: number,
+    @Req() request: Request
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.deleteAuthenticatedUserPost(
+      postID,
+      authenticatedUser
+    );
   }
 }

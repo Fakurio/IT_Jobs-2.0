@@ -110,6 +110,7 @@ describe("JobPostsService", () => {
   const usersServiceMock = {
     addPostToFavourites: jest.fn(() => Promise.resolve(true)),
     getFavouritePosts: jest.fn((user) => Promise.resolve(true)),
+    deletePostFromFavourite: jest.fn((user) => Promise.resolve(true)),
   };
 
   beforeEach(async () => {
@@ -414,5 +415,16 @@ describe("JobPostsService", () => {
     } as User;
     expect(await service.getFavouritePosts(user)).toEqual(true);
     expect(usersService.getFavouritePosts).toHaveBeenCalledWith(user);
+  });
+
+  it("should delete post from authenticated user favourites", async () => {
+    const user = {
+      id: 1,
+      username: "Kamil",
+    } as User;
+    expect(await service.deletePostFromFavourite(1, user)).toEqual({
+      message: "Post deleted from favourites",
+    });
+    expect(usersService.deletePostFromFavourite).toHaveBeenCalledWith(1, user);
   });
 });

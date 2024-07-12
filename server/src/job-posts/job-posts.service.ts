@@ -272,4 +272,24 @@ export class JobPostsService {
       throw new InternalServerErrorException("Failed to get favourite posts");
     }
   }
+
+  async deletePostFromFavourite(postID: number, authenticatedUser: User) {
+    try {
+      await this.usersService.deletePostFromFavourite(
+        postID,
+        authenticatedUser
+      );
+      return {
+        message: "Post deleted from favourites",
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
+      console.log(error);
+      throw new InternalServerErrorException(
+        "Failed to delete post from favourites"
+      );
+    }
+  }
 }
