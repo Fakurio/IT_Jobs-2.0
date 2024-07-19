@@ -7,6 +7,7 @@ import { JobPost } from "../entities/job-post.entity";
 import { Language } from "../entities/language.entity";
 import { Level } from "../entities/level.entity";
 import { Status } from "../entities/status.entity";
+import { JobApplication } from "src/entities/job-application.entity";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ export const dataSourceOptions = {
     Language,
     Level,
     Status,
+    JobApplication,
   ],
   synchronize: true,
 };

@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { JobPost } from "./job-post.entity";
+import { JobApplication } from "./job-application.entity";
 
 export enum StatusEnum {
   PENDING = "Pending",
@@ -17,4 +18,7 @@ export class Status {
 
   @OneToMany(() => JobPost, (jobPost) => jobPost.status)
   jobPosts!: JobPost[];
+
+  @OneToMany(() => JobApplication, (jobApplication) => jobApplication.status)
+  jobApplications!: JobApplication[];
 }

@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 import { Role } from "./role.entity";
 import { JobPost } from "./job-post.entity";
+import { JobApplication } from "./job-application.entity";
 
 @Entity()
 export class User {
@@ -36,4 +37,7 @@ export class User {
   @ManyToMany(() => JobPost, (jobPost) => jobPost.favouritedBy)
   @JoinTable({ name: "favourite_posts" })
   favouritePosts!: JobPost[];
+
+  @OneToMany(() => JobApplication, (application) => application.user)
+  applications!: JobApplication[];
 }

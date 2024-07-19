@@ -5,6 +5,7 @@ import { AuthModule } from "./auth/auth.module";
 import { dataSourceOptions } from "./database/data-source";
 import { UsersModule } from "./users/users.module";
 import { JobPostsModule } from "./job-posts/job-posts.module";
+import { JobApplicationsModule } from './job-applications/job-applications.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { JobPostsModule } from "./job-posts/job-posts.module";
     AuthModule,
     UsersModule,
     JobPostsModule,
+    JobApplicationsModule,
   ],
 })
 export class AppModule {}

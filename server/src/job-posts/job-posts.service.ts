@@ -292,4 +292,15 @@ export class JobPostsService {
       );
     }
   }
+
+  async getPostByID(postID: number) {
+    return await this.jobPostsRepository.findOne({
+      relations: ["author", "status"],
+      where: { id: postID, status: { status: StatusEnum.ACCEPTED } },
+    });
+  }
+
+  async getStatusIDByName(status: StatusEnum) {
+    return await this.statusRepository.findOne({ where: { status: status } });
+  }
 }

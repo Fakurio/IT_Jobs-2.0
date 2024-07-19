@@ -37,7 +37,7 @@ export class UsersController {
   updateProfile(
     @Body(new ZodValidationPipe(UpdateProfileSchema)) userDTO: UpdateProfileDTO,
     @UploadedFile(new CVFileValidationPipe()) cv: Express.Multer.File,
-    @Req() request: Request,
+    @Req() request: Request
   ) {
     return this.usersService.updateProfile(request, userDTO, cv);
   }
@@ -53,7 +53,7 @@ export class UsersController {
   @Get("/cv/static")
   previewAuthenticatedUserCV(
     @Req() request: Request,
-    @Res() response: Response,
+    @Res() response: Response
   ) {
     return this.usersService.previewAuthenticatedUserCV(request, response);
   }

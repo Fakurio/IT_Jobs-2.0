@@ -18,5 +18,6 @@ import { UsersModule } from "src/users/users.module";
     TypeOrmModule.forFeature([JobPost, ContractType, Level, Status, Language]),
     UsersModule,
   ],
+  exports: [JobPostsService],
 })
 export class JobPostsModule {}

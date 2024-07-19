@@ -12,14 +12,17 @@ export const CVDiskStorage = diskStorage({
     const authenticatedUser = req.user as User;
     const fileName = `${authenticatedUser.id}-${Date.now()}`;
     if (file.mimetype === "application/pdf") {
-      const files = fs.readdirSync(DESTINATION_PATH);
-      for (const file of files) {
-        if (file.split("-")[0] === authenticatedUser.id.toString()) {
-          fs.unlinkSync(`${DESTINATION_PATH}${file}`);
+      if (req.originalUrl === "/job-applications") {
+        cb(null, `${fileName}.pdf`);
+      } else {
+        const files = fs.readdirSync(DESTINATION_PATH);
+        for (const file of files) {
+          if (file.split("-")[0] === authenticatedUser.id.toString()) {
+            fs.unlinkSync(`${DESTINATION_PATH}${file}`);
+          }
         }
+        cb(null, `${fileName}.pdf`);
       }
     }
-
-    cb(null, `${fileName}.pdf`);
   },
 });

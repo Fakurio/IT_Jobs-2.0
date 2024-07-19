@@ -4,6 +4,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { ContractType } from "./contract-type.entity";
@@ -11,6 +12,7 @@ import { Level } from "./level.entity";
 import { User } from "./user.entity";
 import { Status } from "./status.entity";
 import { Language } from "./language.entity";
+import { JobApplication } from "./job-application.entity";
 
 @Entity()
 export class JobPost {
@@ -53,4 +55,7 @@ export class JobPost {
 
   @ManyToMany(() => User, (user) => user.favouritePosts)
   favouritedBy!: User[];
+
+  @OneToMany(() => JobApplication, (application) => application.jobPost)
+  applications!: JobApplication[];
 }
