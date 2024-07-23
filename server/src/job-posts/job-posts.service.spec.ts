@@ -14,7 +14,7 @@ import { BadRequestException } from "@nestjs/common";
 import { User } from "../entities/user.entity";
 import * as fs from "fs";
 import { UsersService } from "../users/users.service";
-import { application } from "express";
+import { JobApplicationsService } from "../job-applications/job-applications.service";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -141,6 +141,10 @@ describe("JobPostsService", () => {
         {
           provide: UsersService,
           useValue: usersServiceMock,
+        },
+        {
+          provide: JobApplicationsService,
+          useValue: {},
         },
       ],
     }).compile();

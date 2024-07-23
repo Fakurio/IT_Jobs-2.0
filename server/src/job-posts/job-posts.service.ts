@@ -201,7 +201,6 @@ export class JobPostsService {
       statusQueryString
     );
   }
-
   async updateAuthenticatedUserPost(
     postID: number,
     updatePostDTO: UpdatePostDTO,

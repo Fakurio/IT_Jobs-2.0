@@ -10,6 +10,7 @@ describe("JobApplicationsController", () => {
 
   const jobApplicationsServiceMock = {
     applyForJob: jest.fn(() => Promise.resolve(true)),
+    getCVFromApplication: jest.fn(() => Promise.resolve(true)),
   };
 
   beforeEach(async () => {
@@ -39,5 +40,13 @@ describe("JobApplicationsController", () => {
     const cv = {} as Express.Multer.File;
     const request = {} as Request;
     expect(await controller.applyForJob(postID, cv, request)).toEqual(true);
+  });
+
+  it("should call getCVFromApplication method from service", async () => {
+    const applicationID = 1;
+    const request = {} as Request;
+    expect(
+      await controller.getCVFromApplication(request, applicationID)
+    ).toEqual(true);
   });
 });

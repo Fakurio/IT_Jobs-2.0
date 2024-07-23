@@ -3,6 +3,9 @@ import {
   InternalServerErrorException,
   Inject,
   forwardRef,
+  BadRequestException,
+  NotFoundException,
+  StreamableFile,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JobApplication } from "../entities/job-application.entity";
@@ -15,6 +18,8 @@ import { User } from "../entities/user.entity";
 import { unlinkSync } from "fs";
 import { StatusEnum } from "../entities/status.entity";
 import { Status } from "../entities/status.entity";
+import { createReadStream } from "fs";
+import { join } from "path";
 
 @Injectable()
 export class JobApplicationsService {
@@ -72,6 +77,26 @@ export class JobApplicationsService {
         status: { status: StatusEnum[status.toUpperCase()] },
       },
     });
+  }
+
+  async getCVFromApplication(user: User, applicationID: number) {
+    const application = await this.jobApplicationsRepository.findOne({
+      relations: ["user", "jobPost", "jobPost.author"],
+      where: { id: applicationID },
+    });
+    if (!application) {
+      throw new BadRequestException("Application not found");
+    }
+    if (application.jobPost.author.id !== user.id) {
+      throw new BadRequestException("You are not authorized to view this CV");
+    }
+    if (!application.user.cv) {
+      throw new NotFoundException("Applicant has removed their CV");
+    }
+    const cv = createReadStream(
+      join(process.cwd(), `cv-files/${application.user.cv}`)
+    );
+    return new StreamableFile(cv);
   }
 
   private deleteOldCV(user: User) {

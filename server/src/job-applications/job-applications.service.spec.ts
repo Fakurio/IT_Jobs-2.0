@@ -6,6 +6,13 @@ import { UsersService } from "../users/users.service";
 import { JobPostsService } from "../job-posts/job-posts.service";
 import { Request } from "express";
 import { ApplyForJobException } from "../exceptions/apply-for-job.exception";
+import { User } from "src/entities/user.entity";
+import * as fs from "node:fs";
+import {
+  StreamableFile,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
 
 describe("JobApplicationsService", () => {
   let service: JobApplicationsService;
@@ -15,6 +22,11 @@ describe("JobApplicationsService", () => {
     save: jest.fn((application) =>
       Promise.resolve(jobApplications.push(application))
     ),
+    findOne: jest.fn(({ relations, where }) => {
+      return Promise.resolve(
+        jobApplications.find((application) => application.id === where.id)
+      );
+    }),
   };
   const usersServiceMock = {
     updateProfile: jest.fn((request, dto, cv) => Promise.resolve(true)),
@@ -103,5 +115,58 @@ describe("JobApplicationsService", () => {
     });
     expect(jobApplications).toHaveLength(1);
     expect(usersService.updateProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it("should download cv from application", async () => {
+    jobApplications.push({
+      id: 1,
+      user: { cv: "cv.pdf" },
+      jobPost: { author: { id: 2 } },
+    });
+    const user = { id: 2 } as User;
+    jest.spyOn(fs, "createReadStream").mockReturnValueOnce(true as any);
+    expect(await service.getCVFromApplication(user, 1)).toBeInstanceOf(
+      StreamableFile
+    );
+  });
+
+  it("should throw error while trying to download cv => application not found", async () => {
+    const user = { id: 2 } as User;
+    try {
+      await service.getCVFromApplication(user, 1);
+    } catch (error: any) {
+      expect(error.message).toEqual("Application not found");
+      expect(error).toBeInstanceOf(BadRequestException);
+    }
+  });
+
+  it("should throw error while trying to download cv => user is not the author of the job post", async () => {
+    jobApplications.push({
+      id: 1,
+      user: { cv: "cv.pdf" },
+      jobPost: { author: { id: 1 } },
+    });
+    const user = { id: 2 } as User;
+    try {
+      await service.getCVFromApplication(user, 1);
+    } catch (error: any) {
+      expect(error.message).toEqual("You are not authorized to view this CV");
+      expect(error).toBeInstanceOf(BadRequestException);
+    }
+  });
+
+  it("should throw error while trying to download cv => cv not found", async () => {
+    jobApplications.push({
+      id: 1,
+      user: { cv: null },
+      jobPost: { author: { id: 2 } },
+    });
+    const user = { id: 2 } as User;
+    try {
+      await service.getCVFromApplication(user, 1);
+    } catch (error: any) {
+      expect(error.message).toEqual("Applicant has removed their CV");
+      expect(error).toBeInstanceOf(NotFoundException);
+    }
   });
 });

@@ -8,6 +8,8 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  Get,
+  Param,
 } from "@nestjs/common";
 import { JobApplicationsService } from "./job-applications.service";
 import { IsAuthenticated } from "../auth/guards/is-authenticated";
@@ -17,6 +19,7 @@ import { CVDiskStorage } from "../users/multer-cv-storage/cv-disk-storage";
 import { CVFileValidationPipe } from "../users/pipes/cv-file-validation.pipe";
 import { FileUploadFilter } from "../filters/file-upload.filter";
 import { Request } from "express";
+import { User } from "src/entities/user.entity";
 
 @Controller("job-applications")
 export class JobApplicationsController {
@@ -35,5 +38,19 @@ export class JobApplicationsController {
     @Req() request: Request
   ) {
     return this.jobApplicationsService.applyForJob(request, postID, cv);
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/:id/cv")
+  getCVFromApplication(
+    @Req() request: Request,
+    @Param("id", ParseIntPipe) applicationID: number
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobApplicationsService.getCVFromApplication(
+      authenticatedUser,
+      applicationID
+    );
   }
 }

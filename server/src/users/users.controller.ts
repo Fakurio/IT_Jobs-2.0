@@ -60,7 +60,4 @@ export class UsersController {
 
   // @Delete("/cv")
   // removeAuthenticatedUserCV(@Req() request: Request) {}
-
-  // @Get("cv/:applicationID")
-  // downloadApplicantCV() {}
 }
