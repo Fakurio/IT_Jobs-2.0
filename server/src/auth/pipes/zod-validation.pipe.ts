@@ -11,6 +11,7 @@ import { UpdateProfileValidationException } from "../../exceptions/update-profil
 import UpdatePostStatus from "../../job-posts/dto/update-post-status.dto";
 import { StatusEnum } from "../../entities/status.entity";
 import UpdatePostSchema from "../../job-posts/dto/update-post.dto";
+import UpdateApplicationStatusSchema from "../../job-applications/dto/update-application-status.dto";
 
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodSchema) {}
@@ -31,6 +32,11 @@ export class ZodValidationPipe implements PipeTransform {
           throw new PostValidationException("Invalid post data");
         }
         if (this.schema === UpdatePostStatus) {
+          throw new BadRequestException(
+            `Allowed status values: ${StatusEnum.ACCEPTED}, ${StatusEnum.REJECTED}`
+          );
+        }
+        if (this.schema === UpdateApplicationStatusSchema) {
           throw new BadRequestException(
             `Allowed status values: ${StatusEnum.ACCEPTED}, ${StatusEnum.REJECTED}`
           );

@@ -13,6 +13,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from "@nestjs/common";
+import { StatusEnum } from "../entities/status.entity";
 
 describe("JobApplicationsService", () => {
   let service: JobApplicationsService;
@@ -167,6 +168,70 @@ describe("JobApplicationsService", () => {
     } catch (error: any) {
       expect(error.message).toEqual("Applicant has removed their CV");
       expect(error).toBeInstanceOf(NotFoundException);
+    }
+  });
+
+  it("should update application status", async () => {
+    jobApplications.push({
+      id: 1,
+      jobPost: { author: { id: 1 } },
+      status: { status: StatusEnum.PENDING },
+    });
+    const user = { id: 1 } as User;
+    expect(
+      await service.updateApplicationStatus(user, 1, {
+        status: StatusEnum.ACCEPTED,
+      })
+    ).toEqual({
+      message: "Application status updated successfully",
+    });
+  });
+
+  it("should throw error while updating application status => application not found", async () => {
+    const user = { id: 1 } as User;
+    try {
+      await service.updateApplicationStatus(user, 1, {
+        status: StatusEnum.ACCEPTED,
+      });
+    } catch (error: any) {
+      expect(error.message).toEqual("Application not found");
+      expect(error).toBeInstanceOf(BadRequestException);
+    }
+  });
+
+  it("should throw error while updating application status => user is not author of the job post", async () => {
+    jobApplications.push({
+      id: 1,
+      jobPost: { author: { id: 2 } },
+      status: { status: StatusEnum.PENDING },
+    });
+    const user = { id: 1 } as User;
+    try {
+      await service.updateApplicationStatus(user, 1, {
+        status: StatusEnum.ACCEPTED,
+      });
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "You are not authorized to update this application"
+      );
+      expect(error).toBeInstanceOf(BadRequestException);
+    }
+  });
+
+  it("should throw error while updating application status => application status is not pending", async () => {
+    jobApplications.push({
+      id: 1,
+      jobPost: { author: { id: 1 } },
+      status: { status: StatusEnum.ACCEPTED },
+    });
+    const user = { id: 1 } as User;
+    try {
+      await service.updateApplicationStatus(user, 1, {
+        status: StatusEnum.ACCEPTED,
+      });
+    } catch (error: any) {
+      expect(error.message).toEqual("You can only update pending applications");
+      expect(error).toBeInstanceOf(BadRequestException);
     }
   });
 });
