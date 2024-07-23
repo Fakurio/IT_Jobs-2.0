@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { JobApplicationsService } from "./job-applications.service";
 import { JobApplicationsController } from "./job-applications.controller";
 import { AuthModule } from "../auth/auth.module";
@@ -14,7 +14,8 @@ import { JobPostsModule } from "../job-posts/job-posts.module";
     AuthModule,
     TypeOrmModule.forFeature([JobApplication]),
     UsersModule,
-    JobPostsModule,
+    forwardRef(() => JobPostsModule),
   ],
+  exports: [JobApplicationsService],
 })
 export class JobApplicationsModule {}

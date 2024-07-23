@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { JobPostsController } from "./job-posts.controller";
 import { JobPostsService } from "./job-posts.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -9,6 +9,7 @@ import { Language } from "../entities/language.entity";
 import { Status } from "../entities/status.entity";
 import { AuthModule } from "../auth/auth.module";
 import { UsersModule } from "src/users/users.module";
+import { JobApplicationsModule } from "src/job-applications/job-applications.module";
 
 @Module({
   controllers: [JobPostsController],
@@ -17,6 +18,7 @@ import { UsersModule } from "src/users/users.module";
     AuthModule,
     TypeOrmModule.forFeature([JobPost, ContractType, Level, Status, Language]),
     UsersModule,
+    forwardRef(() => JobApplicationsModule),
   ],
   exports: [JobPostsService],
 })

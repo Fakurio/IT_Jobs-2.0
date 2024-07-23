@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  Inject,
+  forwardRef,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JobApplication } from "../entities/job-application.entity";
 import { Repository } from "typeorm";
@@ -17,6 +22,7 @@ export class JobApplicationsService {
     @InjectRepository(JobApplication)
     private jobApplicationsRepository: Repository<JobApplication>,
     private usersService: UsersService,
+    @Inject(forwardRef(() => JobPostsService))
     private jobPostsService: JobPostsService
   ) {}
 
@@ -49,6 +55,23 @@ export class JobApplicationsService {
       console.log(error);
       throw new InternalServerErrorException("Failed to apply for job");
     }
+  }
+
+  async getApplicationsForPost(postID: number, status: string) {
+    return await this.jobApplicationsRepository.find({
+      relations: ["user", "status"],
+      select: {
+        user: {
+          id: true,
+          username: true,
+          cv: true,
+        },
+      },
+      where: {
+        jobPost: { id: postID },
+        status: { status: StatusEnum[status.toUpperCase()] },
+      },
+    });
   }
 
   private deleteOldCV(user: User) {

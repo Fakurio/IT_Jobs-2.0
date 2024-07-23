@@ -17,6 +17,7 @@ import { UpdatePostDTO } from "./dto/update-post.dto";
 import { unlinkSync } from "fs";
 import { join } from "path";
 import { UsersService } from "../users/users.service";
+import { JobApplicationsService } from "../job-applications/job-applications.service";
 
 @Injectable()
 export class JobPostsService {
@@ -31,7 +32,8 @@ export class JobPostsService {
     private statusRepository: Repository<Status>,
     @InjectRepository(Language)
     private languagesRepository: Repository<Language>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private jobApplicationsService: JobApplicationsService
   ) {}
 
   async getAll(): Promise<JobPost[]> {
@@ -177,6 +179,27 @@ export class JobPostsService {
       .where("author.id = :id", { id: authenticatedUser.id })
       .andWhere("status.status = :status", { status: statusQueryString })
       .getMany();
+  }
+
+  async getApplicationsForPost(
+    user: User,
+    postID: number,
+    statusQueryString: string
+  ) {
+    const post = await this.jobPostsRepository.findOne({
+      relations: ["author"],
+      where: { id: postID },
+    });
+    if (!post) {
+      throw new BadRequestException("Post with this ID does not exist");
+    }
+    if (post.author.id !== user.id) {
+      throw new BadRequestException("You are not the author of this post");
+    }
+    return await this.jobApplicationsService.getApplicationsForPost(
+      postID,
+      statusQueryString
+    );
   }
 
   async updateAuthenticatedUserPost(

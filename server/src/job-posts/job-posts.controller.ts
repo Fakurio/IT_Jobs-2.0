@@ -118,6 +118,22 @@ export class JobPostsController {
     );
   }
 
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/:id/applications")
+  getApplicationsForPost(
+    @Req() request: Request,
+    @Param("id", ParseIntPipe) postID: number,
+    @Query("status", StatusQueryParamPipe) status: string
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.getApplicationsForPost(
+      authenticatedUser,
+      postID,
+      status
+    );
+  }
+
   @UseFilters(FileUploadFilter)
   @UseInterceptors(FileInterceptor("logo", { storage: LogoDiskStorage }))
   @UseInterceptors(CheckCsrfTokenInterceptor)
