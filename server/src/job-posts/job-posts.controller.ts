@@ -12,6 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
   Delete,
+  Query,
 } from "@nestjs/common";
 import { JobPostsService } from "./job-posts.service";
 import AddPostSchema, { AddPostDTO } from "./dto/add-post.dto";
@@ -32,6 +33,7 @@ import UpdatePostStatus, {
 } from "./dto/update-post-status.dto";
 import UpdatePostSchema, { UpdatePostDTO } from "./dto/update-post.dto";
 import { UpdateLogoFileValidationPipe } from "./pipes/update-logo-file-validation.pipe";
+import { StatusQueryParamPipe } from "./pipes/status-query-param.pipe";
 
 @Controller("job-posts")
 export class JobPostsController {
@@ -105,9 +107,15 @@ export class JobPostsController {
   @UseInterceptors(CheckCsrfTokenInterceptor)
   @UseGuards(IsAuthenticated)
   @Get("/me")
-  getAuthenticatedUserPosts(@Req() request: Request) {
+  getAuthenticatedUserPosts(
+    @Req() request: Request,
+    @Query("status", StatusQueryParamPipe) status: string
+  ) {
     const authenticatedUser = request.user as User;
-    return this.jobPostsService.getAuthenticatedUserPosts(authenticatedUser);
+    return this.jobPostsService.getAuthenticatedUserPosts(
+      authenticatedUser,
+      status
+    );
   }
 
   @UseFilters(FileUploadFilter)

@@ -57,11 +57,17 @@ describe("JobPostsService", () => {
           if (condition.id) {
             if (field.startsWith("author.id")) {
               return {
-                getMany: jest.fn(() =>
-                  Promise.resolve(
-                    jobPosts.filter((post) => post.author.id === condition.id)
-                  )
-                ),
+                andWhere: jest.fn(() => {
+                  return {
+                    getMany: jest.fn(() =>
+                      Promise.resolve(
+                        jobPosts.filter(
+                          (post) => post.author.id === condition.id
+                        )
+                      )
+                    ),
+                  };
+                }),
               };
             }
             return {
@@ -300,7 +306,7 @@ describe("JobPostsService", () => {
       id: 1,
       username: "Kamil",
     } as User;
-    expect(await service.getAuthenticatedUserPosts(user)).toEqual([
+    expect(await service.getAuthenticatedUserPosts(user, "")).toEqual([
       jobPosts[0],
       jobPosts[1],
     ]);
@@ -311,7 +317,7 @@ describe("JobPostsService", () => {
       id: 3,
       username: "Wojtek",
     } as User;
-    expect(await service.getAuthenticatedUserPosts(user)).toEqual([]);
+    expect(await service.getAuthenticatedUserPosts(user, "")).toEqual([]);
   });
 
   it("should update authenticated user job post", async () => {

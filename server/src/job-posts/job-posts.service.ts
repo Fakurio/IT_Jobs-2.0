@@ -162,7 +162,10 @@ export class JobPostsService {
     }
   }
 
-  async getAuthenticatedUserPosts(authenticatedUser: User) {
+  async getAuthenticatedUserPosts(
+    authenticatedUser: User,
+    statusQueryString: string
+  ) {
     return await this.jobPostsRepository
       .createQueryBuilder("jobPost")
       .innerJoin("jobPost.level", "level")
@@ -172,6 +175,7 @@ export class JobPostsService {
       .innerJoin("jobPost.status", "status")
       .select(["jobPost", "level", "contractType", "languages", "status"])
       .where("author.id = :id", { id: authenticatedUser.id })
+      .andWhere("status.status = :status", { status: statusQueryString })
       .getMany();
   }
 
