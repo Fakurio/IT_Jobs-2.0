@@ -34,6 +34,10 @@ export class UsersService {
     });
   }
 
+  async checkForUsername(username: string) {
+    return await this.usersRepository.exists({ where: { username } });
+  }
+
   async addUser(
     registerRequestDTO: RegisterRequestDto,
     role: RoleTypes

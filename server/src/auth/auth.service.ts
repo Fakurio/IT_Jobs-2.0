@@ -16,7 +16,7 @@ import { RoleTypes } from "../entities/role.entity";
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private hashService: HashService,
+    private hashService: HashService
   ) {}
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
@@ -33,7 +33,7 @@ export class AuthService {
 
     const passwordCheck = await this.hashService.verifyPassword(
       password,
-      user.password,
+      user.password
     );
 
     if (!passwordCheck) {
@@ -45,14 +45,20 @@ export class AuthService {
 
   async registerUser(registerRequestDTO: RegisterRequestDto) {
     const userExists = await this.usersService.findByEmail(
-      registerRequestDTO.email,
+      registerRequestDTO.email
     );
     if (userExists) {
       throw new BadRequestException("User already exists");
     }
+    const usernameExists = await this.usersService.checkForUsername(
+      registerRequestDTO.username
+    );
+    if (usernameExists) {
+      throw new BadRequestException("Username is already taken");
+    }
 
     registerRequestDTO.password = await this.hashService.hashPassword(
-      registerRequestDTO.password,
+      registerRequestDTO.password
     );
     try {
       await this.usersService.addUser(registerRequestDTO, RoleTypes.USER);
