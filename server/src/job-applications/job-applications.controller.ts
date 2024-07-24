@@ -11,6 +11,7 @@ import {
   Get,
   Param,
   Put,
+  Query,
 } from "@nestjs/common";
 import { JobApplicationsService } from "./job-applications.service";
 import { IsAuthenticated } from "../auth/guards/is-authenticated";
@@ -25,6 +26,7 @@ import UpdateApplicationStatusSchema, {
   UpdateApplicationStatusDTO,
 } from "./dto/update-application-status.dto";
 import { ZodValidationPipe } from "../auth/pipes/zod-validation.pipe";
+import { StatusQueryParamPipe } from "src/job-posts/pipes/status-query-param.pipe";
 
 @Controller("job-applications")
 export class JobApplicationsController {
@@ -73,6 +75,20 @@ export class JobApplicationsController {
       authenticatedUser,
       applicationID,
       updateApplicationStatusDTO
+    );
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/me")
+  getAuthenticatedUserApplications(
+    @Req() request: Request,
+    @Query("status", StatusQueryParamPipe) statusQueryString: string
+  ) {
+    const authenticatedUser = request.user as User;
+    return this.jobApplicationsService.getAuthenticatedUserApplications(
+      authenticatedUser,
+      statusQueryString
     );
   }
 }

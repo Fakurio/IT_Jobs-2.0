@@ -15,7 +15,7 @@ import { Request } from "express";
 import { JobPostsService } from "../job-posts/job-posts.service";
 import { ApplyForJobException } from "../exceptions/apply-for-job.exception";
 import { User } from "../entities/user.entity";
-import { unlinkSync } from "fs";
+import { stat, unlinkSync } from "fs";
 import { StatusEnum } from "../entities/status.entity";
 import { Status } from "../entities/status.entity";
 import { createReadStream } from "fs";
@@ -135,6 +135,27 @@ export class JobApplicationsService {
         "Failed to update application status"
       );
     }
+  }
+
+  async getAuthenticatedUserApplications(
+    user: User,
+    statusQueryString: string
+  ) {
+    const status = <Status>(
+      await this.jobPostsService.getStatusIDByName(
+        StatusEnum[statusQueryString.toUpperCase()]
+      )
+    );
+    return await this.jobApplicationsRepository
+      .createQueryBuilder("jobApplication")
+      .innerJoinAndSelect("jobApplication.jobPost", "jobPost")
+      .innerJoin("jobPost.author", "author")
+      .innerJoinAndSelect("jobPost.languages", "languages")
+      .innerJoinAndSelect("jobPost.level", "level")
+      .addSelect("author.username")
+      .where("jobApplication.user = :user", { user: user.id })
+      .andWhere("jobApplication.status = :status", { status: status.id })
+      .getMany();
   }
 
   private deleteOldCV(user: User) {
