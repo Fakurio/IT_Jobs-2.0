@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Post,
+  Get,
   Req,
   Res,
   UseGuards,
@@ -36,11 +37,18 @@ export class AuthController {
     return this.authService.registerUser(registerRequestDTO);
   }
 
+  @UseInterceptors(GenerateCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/me")
+  getUserInfo(@Req() req: Request) {
+    return this.authService.getAuthenticatedUser(req);
+  }
+
   @UseGuards(IsAuthenticated)
   @Post("/logout")
   async logout(
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) response: Response
   ) {
     response.status(200);
     return this.authService.logout(request, response);

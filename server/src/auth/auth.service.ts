@@ -79,6 +79,14 @@ export class AuthService {
     };
   }
 
+  getAuthenticatedUser(req: Request) {
+    const authenticatedUser = req.user as User;
+    return {
+      cv: authenticatedUser.cv,
+      username: authenticatedUser.username,
+    };
+  }
+
   async logout(request: Request, response: Response) {
     response.clearCookie("connect.sid", { sameSite: "strict" });
     const logoutError = await new Promise((resolve) => {
