@@ -14,6 +14,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { StatusEnum } from "../entities/status.entity";
+import { NotificationsService } from "../notifications/notifications.service";
 
 describe("JobApplicationsService", () => {
   let service: JobApplicationsService;
@@ -39,6 +40,9 @@ describe("JobApplicationsService", () => {
     getStatusIDByName: jest.fn(() => Promise.resolve(1)),
     deleteOldCV: jest.fn((user) => Promise.resolve(true)),
   };
+  const notificationsServiceMock = {
+    notifyPostAuthor: jest.fn(() => Promise.resolve(true)),
+  };
   const jobPosts = [
     { id: 1, title: "Test", author: { id: 1 } },
     { id: 2, title: "Test2", author: { id: 1 } },
@@ -55,6 +59,7 @@ describe("JobApplicationsService", () => {
         },
         { provide: UsersService, useValue: usersServiceMock },
         { provide: JobPostsService, useValue: jobPostsServiceMock },
+        { provide: NotificationsService, useValue: notificationsServiceMock },
       ],
     }).compile();
 

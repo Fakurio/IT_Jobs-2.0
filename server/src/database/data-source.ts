@@ -8,6 +8,8 @@ import { Language } from "../entities/language.entity";
 import { Level } from "../entities/level.entity";
 import { Status } from "../entities/status.entity";
 import { JobApplication } from "src/entities/job-application.entity";
+import { Notification } from "src/entities/notification.entity";
+import { NotificationType } from "src/entities/notification-type.entity";
 
 dotenv.config();
 
@@ -28,6 +30,8 @@ export const dataSourceOptions = {
     Level,
     Status,
     JobApplication,
+    Notification,
+    NotificationType,
   ],
   synchronize: true,
 };

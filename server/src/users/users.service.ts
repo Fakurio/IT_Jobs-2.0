@@ -34,6 +34,10 @@ export class UsersService {
     });
   }
 
+  async findByID(id: number) {
+    return await this.usersRepository.findOne({ where: { id } });
+  }
+
   async checkForUsername(username: string) {
     return await this.usersRepository.exists({ where: { username } });
   }

@@ -15,12 +15,13 @@ import { Request } from "express";
 import { JobPostsService } from "../job-posts/job-posts.service";
 import { ApplyForJobException } from "../exceptions/apply-for-job.exception";
 import { User } from "../entities/user.entity";
-import { stat, unlinkSync } from "fs";
+import { unlinkSync } from "fs";
 import { StatusEnum } from "../entities/status.entity";
 import { Status } from "../entities/status.entity";
 import { createReadStream } from "fs";
 import { join } from "path";
 import { UpdateApplicationStatusDTO } from "./dto/update-application-status.dto";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class JobApplicationsService {
@@ -29,7 +30,8 @@ export class JobApplicationsService {
     private jobApplicationsRepository: Repository<JobApplication>,
     private usersService: UsersService,
     @Inject(forwardRef(() => JobPostsService))
-    private jobPostsService: JobPostsService
+    private jobPostsService: JobPostsService,
+    private notificationsService: NotificationsService
   ) {}
 
   async applyForJob(
@@ -37,25 +39,32 @@ export class JobApplicationsService {
     postID: number,
     cv: Express.Multer.File | null
   ) {
+    const authenticatedUser = request.user as User;
     const post = await this.jobPostsService.getPostByID(postID);
     if (!post) {
       throw new ApplyForJobException("Post not found");
     }
-    if (post.author.id === (request.user as User).id) {
+    if (post.author.id === authenticatedUser.id) {
       throw new ApplyForJobException("You can't apply for your own job post");
     }
     if (cv) {
       await this.usersService.updateProfile(request, {}, cv);
-      this.deleteOldCV(request.user as User);
+      this.deleteOldCV(authenticatedUser);
     }
     try {
       const jobApplication = new JobApplication();
       jobApplication.jobPost = post;
-      jobApplication.user = request.user as User;
+      jobApplication.user = authenticatedUser;
       jobApplication.status = <Status>(
         await this.jobPostsService.getStatusIDByName(StatusEnum.PENDING)
       );
       await this.jobApplicationsRepository.save(jobApplication);
+
+      this.notificationsService.notifyPostAuthor(
+        post.author.id,
+        post.title,
+        authenticatedUser.username
+      );
       return { message: "Application sent successfully" };
     } catch (error) {
       console.log(error);

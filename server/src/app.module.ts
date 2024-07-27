@@ -6,6 +6,7 @@ import { dataSourceOptions } from "./database/data-source";
 import { UsersModule } from "./users/users.module";
 import { JobPostsModule } from "./job-posts/job-posts.module";
 import { JobApplicationsModule } from './job-applications/job-applications.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JobApplicationsModule } from './job-applications/job-applications.modul
     UsersModule,
     JobPostsModule,
     JobApplicationsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

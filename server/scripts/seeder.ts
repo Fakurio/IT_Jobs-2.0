@@ -18,6 +18,10 @@ import { UsersModule } from "src/users/users.module";
 import { UserSeeder } from "src/seeders/user.seeder";
 import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "src/auth/auth.module";
+import { NotificationType } from "src/entities/notification-type.entity";
+import { NotificationTypeSeeder } from "src/seeders/notification-type.seeder";
+import { forwardRef } from "@nestjs/common";
+import { NotificationsModule } from "src/notifications/notifications.module";
 
 seeder({
   imports: [
@@ -30,12 +34,14 @@ seeder({
       Language,
       JobPost,
       User,
+      NotificationType,
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    UsersModule,
-    AuthModule,
+    forwardRef(() => UsersModule),
+    forwardRef(() => AuthModule),
+    forwardRef(() => NotificationsModule),
   ],
 }).run([
   RoleSeeder,
@@ -45,4 +51,5 @@ seeder({
   LanguageSeeder,
   UserSeeder,
   JobPostSeeder,
+  NotificationTypeSeeder,
 ]);

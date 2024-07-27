@@ -3,6 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "../users/users.service";
 import { HashService } from "./hash/hash.service";
 import { BadRequestException, UnauthorizedException } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
 
 describe("AuthService", () => {
   let authService: AuthService;
@@ -19,12 +20,16 @@ describe("AuthService", () => {
       return filteredUsers.length > 0 ? filteredUsers[0] : null;
     }),
     addUser: jest.fn((dto) =>
-      users.push({ email: dto.email, password: dto.password }),
+      users.push({ email: dto.email, password: dto.password })
     ),
+    checkForUsername: jest.fn(),
   };
   let hashServiceMock = {
     verifyPassword: jest.fn((hash, password) => hash === password),
     hashPassword: jest.fn((password) => password),
+  };
+  let notificationsServiceMock = {
+    removeUser: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -36,6 +41,7 @@ describe("AuthService", () => {
           provide: UsersService,
           useValue: usersServiceMock,
         },
+        { provide: NotificationsService, useValue: notificationsServiceMock },
       ],
     }).compile();
     authService = module.get<AuthService>(AuthService);
@@ -90,7 +96,7 @@ describe("AuthService", () => {
     expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
     expect(hashService.verifyPassword).toHaveBeenCalledWith(
       user.password,
-      "vfhx#%g42",
+      "vfhx#%g42"
     );
     expect(usersService.findByEmail).toHaveBeenCalledTimes(1);
     expect(usersService.findByEmail).toHaveBeenCalledWith(user.email);
@@ -106,7 +112,7 @@ describe("AuthService", () => {
     expect(usersService.findByEmail).toHaveBeenCalledWith(user.email);
     expect(hashService.verifyPassword).toHaveBeenCalledWith(
       user.password,
-      user.password,
+      user.password
     );
     expect(hashService.verifyPassword).toHaveBeenCalledTimes(1);
     expect(usersService.findByEmail).toHaveBeenCalledTimes(1);
@@ -150,12 +156,13 @@ describe("AuthService", () => {
       session: {
         destroy: jest.fn((callback) => callback(null)),
       },
+      user: { id: 1 },
     };
     const responseMock = {
       clearCookie: jest.fn(),
     };
     expect(
-      await authService.logout(requestMock as any, responseMock as any),
+      await authService.logout(requestMock as any, responseMock as any)
     ).toEqual({
       logout: true,
     });

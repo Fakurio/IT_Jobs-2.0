@@ -26,7 +26,7 @@ import UpdateApplicationStatusSchema, {
   UpdateApplicationStatusDTO,
 } from "./dto/update-application-status.dto";
 import { ZodValidationPipe } from "../auth/pipes/zod-validation.pipe";
-import { StatusQueryParamPipe } from "src/job-posts/pipes/status-query-param.pipe";
+import { StatusQueryParamPipe } from "../job-posts/pipes/status-query-param.pipe";
 
 @Controller("job-applications")
 export class JobApplicationsController {

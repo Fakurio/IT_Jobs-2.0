@@ -19,6 +19,7 @@ import { TypeormStore } from "connect-typeorm";
 import { ConfigService } from "@nestjs/config";
 import { UserSerializer } from "./serializers/user.serializer";
 import * as passport from "passport";
+import { NotificationsModule } from "src/notifications/notifications.module";
 
 @Module({
   providers: [AuthService, HashService, LocalStrategy, UserSerializer],
@@ -29,6 +30,7 @@ import * as passport from "passport";
       session: true,
     }),
     TypeOrmModule.forFeature([Session]),
+    forwardRef(() => NotificationsModule),
   ],
   exports: [HashService],
 })
@@ -38,7 +40,7 @@ export class AuthModule implements NestModule {
   constructor(
     @InjectRepository(Session)
     private sessionRepository: Repository<Session>,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {
     this.configureSession();
   }
@@ -57,7 +59,7 @@ export class AuthModule implements NestModule {
           ttl: parseInt(this.configService.get("SESSION_DURATION") || "3600"),
         }).connect(this.sessionRepository),
         secret: this.configService.get("SESSION_SECRET") || "",
-      }),
+      })
     );
   }
 

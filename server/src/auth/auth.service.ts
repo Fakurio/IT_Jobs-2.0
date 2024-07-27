@@ -11,12 +11,14 @@ import LoginRequestSchema, { LoginRequestDto } from "./dto/login-request.dto";
 import { RegisterRequestDto } from "./dto/register-request.dto";
 import { Request, Response } from "express";
 import { RoleTypes } from "../entities/role.entity";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private hashService: HashService
+    private hashService: HashService,
+    private notificationsService: NotificationsService
   ) {}
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
@@ -73,6 +75,7 @@ export class AuthService {
 
   async login(req: any) {
     return {
+      id: req.user.id,
       cv: req.user.cv,
       username: req.user.username,
       message: "Logged in",
@@ -82,12 +85,14 @@ export class AuthService {
   getAuthenticatedUser(req: Request) {
     const authenticatedUser = req.user as User;
     return {
+      id: authenticatedUser.id,
       cv: authenticatedUser.cv,
       username: authenticatedUser.username,
     };
   }
 
   async logout(request: Request, response: Response) {
+    const authenticatedUser = request.user as User;
     response.clearCookie("connect.sid", { sameSite: "strict" });
     const logoutError = await new Promise((resolve) => {
       request.logOut((error) => resolve(error));
@@ -100,7 +105,7 @@ export class AuthService {
       console.error(logoutError, sessionError);
       throw new InternalServerErrorException("Could not log out user");
     }
-
+    this.notificationsService.removeUser(authenticatedUser.id);
     return {
       logout: true,
     };
