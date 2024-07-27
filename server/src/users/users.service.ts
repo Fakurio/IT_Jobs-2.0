@@ -150,6 +150,10 @@ export class UsersService {
   }
 
   private async updateUsername(authenticatedUser: User, username: string) {
+    const usernameExists = await this.checkForUsername(username);
+    if (usernameExists) {
+      throw new BadRequestException("This username is taken");
+    }
     await this.usersRepository.update(
       { email: authenticatedUser.email },
       {

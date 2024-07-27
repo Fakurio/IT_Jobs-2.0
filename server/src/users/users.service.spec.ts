@@ -20,6 +20,7 @@ describe("UsersService", () => {
 
   let users: any[];
   let usersRepositoryMock = {
+    exists: jest.fn(),
     save: jest.fn((user) => {
       if (user.favouritePosts) {
         users[0] = user;
