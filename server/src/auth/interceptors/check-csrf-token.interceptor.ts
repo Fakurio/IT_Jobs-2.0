@@ -12,7 +12,7 @@ import { ConfigService } from "@nestjs/config";
 export class CheckCsrfTokenInterceptor implements NestInterceptor {
   constructor(
     private hashService: HashService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler) {

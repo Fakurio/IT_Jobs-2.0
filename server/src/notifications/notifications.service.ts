@@ -38,6 +38,25 @@ export class NotificationsService {
     this.connectedUsers.delete(userID);
   }
 
+  async getNotificationsForUser(userID: number) {
+    return await this.notificationsRepository
+      .createQueryBuilder("notification")
+      .select(["notification.id", "notification.content"])
+      .innerJoinAndSelect("notification.type", "type")
+      .innerJoin("notification.receiver", "receiver")
+      .where("receiver.id = :userID", { userID })
+      .andWhere("notification.read = false")
+      .getMany();
+  }
+
+  async updateNotificationsReadStatus(notifications: Notification[]) {
+    const updatedNotifications = notifications.map((notification) => ({
+      ...notification,
+      read: true,
+    }));
+    return this.notificationsRepository.save(updatedNotifications);
+  }
+
   async notifyPostAuthor(
     authorID: number,
     postTitle: string,

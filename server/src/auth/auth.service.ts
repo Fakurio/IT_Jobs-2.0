@@ -74,12 +74,17 @@ export class AuthService {
   }
 
   async login(req: any) {
-    return {
+    const notifications =
+      await this.notificationsService.getNotificationsForUser(req.user.id);
+    const response = {
       id: req.user.id,
       cv: req.user.cv,
       username: req.user.username,
       message: "Logged in",
+      notifications: notifications,
     };
+    this.notificationsService.updateNotificationsReadStatus(notifications);
+    return response;
   }
 
   getAuthenticatedUser(req: Request) {

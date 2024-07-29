@@ -12,7 +12,33 @@ describe("NotificationsService", () => {
     findByID: jest.fn((id) => Promise.resolve({ id })),
   };
   let notificationsRepositoryMock = {
-    save: jest.fn((notification) => notifications.push(notification)),
+    save: jest.fn((noti: Notification | Notification[]) => {
+      if (noti instanceof Notification) {
+        return Promise.resolve(notifications.push(noti));
+      } else {
+        return Promise.resolve(
+          noti.forEach((el) => {
+            const found = notifications.findIndex((e) => e.id === el.id);
+            notifications[found].read = true;
+          })
+        );
+      }
+    }),
+    createQueryBuilder: jest.fn(() => {
+      return {
+        select: jest.fn(() => ({
+          innerJoinAndSelect: jest.fn(() => ({
+            innerJoin: jest.fn(() => ({
+              where: jest.fn(() => ({
+                andWhere: jest.fn(() => ({
+                  getMany: jest.fn(() => Promise.resolve(notifications)),
+                })),
+              })),
+            })),
+          })),
+        })),
+      };
+    }),
   };
   let notificationTypesRepositoryMock = {
     findOne: jest.fn(() => Promise.resolve(1)),
@@ -71,5 +97,21 @@ describe("NotificationsService", () => {
     service.setServer(server);
     service.notifyPostAuthor(3, "title", "username");
     expect(notifications.length).toBe(0);
+  });
+
+  it("should get notifications for user", async () => {
+    notifications.push({ id: 1, content: "content" });
+    expect(await service.getNotificationsForUser(1)).toEqual([
+      {
+        id: 1,
+        content: "content",
+      },
+    ]);
+  });
+
+  it("should update notification's read status", async () => {
+    notifications.push({ id: 1, content: "content", read: false });
+    await service.updateNotificationsReadStatus(notifications);
+    expect(notifications[0].read).toBe(true);
   });
 });
