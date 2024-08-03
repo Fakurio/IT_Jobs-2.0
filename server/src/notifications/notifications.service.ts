@@ -9,7 +9,7 @@ import { Notification } from "../entities/notification.entity";
 import { User } from "../entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { Repository } from "typeorm";
-import { Message } from "./interfaces/message.interface";
+import { NotificationMessage } from "./interfaces/notification-message.interface";
 
 @Injectable()
 export class NotificationsService {
@@ -32,6 +32,7 @@ export class NotificationsService {
 
   addNewUser(client: Socket, userID: number) {
     this.connectedUsers.set(userID, client.id);
+    console.log(this.connectedUsers);
   }
 
   removeUser(userID: number) {
@@ -63,41 +64,66 @@ export class NotificationsService {
     applicantUsername: string
   ) {
     const authorSocketID = this.connectedUsers.get(authorID);
+    const notification = {
+      message: `${applicantUsername} applied for your post: ${postTitle}`,
+      type: NotificationTypeEnum.NEW_APPLICATION,
+    };
     if (!authorSocketID) {
       try {
-        await this.saveNotification(applicantUsername, postTitle, authorID);
+        await this.saveNotification(
+          notification.message,
+          notification.type,
+          authorID
+        );
       } catch (error) {
         console.error(error);
       }
     } else {
-      const message = {
-        message: `${applicantUsername} applied for your post: ${postTitle}`,
-        type: NotificationTypeEnum.NEW_APPLICATION,
-      };
-      this.sendNotification(authorSocketID, "new application", message);
+      this.sendNotification(authorSocketID, "new application", notification);
+    }
+  }
+
+  async notifyApplicant(applicantID: number, postTitle: string) {
+    const applicantSocketID = this.connectedUsers.get(applicantID);
+    const notification = {
+      message: `Your application for post ${postTitle} has been reviewed`,
+      type: NotificationTypeEnum.STATUS_CHANGE,
+    };
+    if (!applicantSocketID) {
+      try {
+        await this.saveNotification(
+          notification.message,
+          notification.type,
+          applicantID
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      this.sendNotification(applicantSocketID, "status change", notification);
     }
   }
 
   private async saveNotification(
-    applicantUsername: string,
-    postTitle: string,
-    authorID: number
+    content: string,
+    type: NotificationTypeEnum,
+    receiverID: number
   ) {
     const notification = new Notification();
-    notification.content = `${applicantUsername} applied for your post: ${postTitle}`;
+    notification.content = content;
     notification.type = <NotificationType>(
       await this.notificationTypesRepository.findOne({
-        where: { type: NotificationTypeEnum.NEW_APPLICATION },
+        where: { type },
       })
     );
-    notification.receiver = <User>await this.usersService.findByID(authorID);
+    notification.receiver = <User>await this.usersService.findByID(receiverID);
     await this.notificationsRepository.save(notification);
   }
 
   private sendNotification(
     socketID: string,
     channel: string,
-    message: Message
+    message: NotificationMessage
   ) {
     this.server.to(socketID).emit(channel, message);
   }

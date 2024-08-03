@@ -115,7 +115,7 @@ export class JobApplicationsService {
     updateApplicationStatusDTO: UpdateApplicationStatusDTO
   ) {
     const application = await this.jobApplicationsRepository.findOne({
-      relations: ["jobPost.author", "status"],
+      relations: ["jobPost.author", "status", "user"],
       where: { id: applicationID },
     });
     if (!application) {
@@ -137,6 +137,11 @@ export class JobApplicationsService {
       );
       application.status = status;
       await this.jobApplicationsRepository.save(application);
+
+      this.notificationsService.notifyApplicant(
+        application.user.id,
+        application.jobPost.title
+      );
       return { message: "Application status updated successfully" };
     } catch (error) {
       console.log(error);

@@ -1,6 +1,6 @@
 import { NotificationTypeEnum } from "src/entities/notification-type.entity";
 
-export interface Message {
+export interface NotificationMessage {
   message: string;
   type: NotificationTypeEnum;
 }
