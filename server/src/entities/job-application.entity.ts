@@ -11,7 +11,9 @@ export class JobApplication {
   @ManyToOne(() => Status, (status) => status.jobApplications)
   status!: Status;
 
-  @ManyToOne(() => JobPost, (jobPost) => jobPost.applications)
+  @ManyToOne(() => JobPost, (jobPost) => jobPost.applications, {
+    onDelete: "CASCADE",
+  })
   jobPost!: JobPost;
 
   @ManyToOne(() => User, (user) => user.applications)

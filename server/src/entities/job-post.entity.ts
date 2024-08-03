@@ -53,7 +53,9 @@ export class JobPost {
   @JoinTable({ name: "job_posts_languages" })
   languages!: Language[];
 
-  @ManyToMany(() => User, (user) => user.favouritePosts)
+  @ManyToMany(() => User, (user) => user.favouritePosts, {
+    onDelete: "CASCADE",
+  })
   favouritedBy!: User[];
 
   @OneToMany(() => JobApplication, (application) => application.jobPost)
