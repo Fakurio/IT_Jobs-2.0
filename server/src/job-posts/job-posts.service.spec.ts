@@ -15,6 +15,7 @@ import { User } from "../entities/user.entity";
 import * as fs from "fs";
 import { UsersService } from "../users/users.service";
 import { JobApplicationsService } from "../job-applications/job-applications.service";
+import { NotificationsService } from "../notifications/notifications.service";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -43,6 +44,7 @@ describe("JobPostsService", () => {
     createQueryBuilder: jest.fn(() => {
       return {
         innerJoin: jest.fn().mockReturnThis(),
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         where: jest.fn((field: string, condition) => {
           if (condition.status) {
@@ -119,6 +121,7 @@ describe("JobPostsService", () => {
     getFavouritePosts: jest.fn((user) => Promise.resolve(true)),
     deletePostFromFavourite: jest.fn((user) => Promise.resolve(true)),
   };
+  const notificationsServiceMock = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -145,6 +148,10 @@ describe("JobPostsService", () => {
         {
           provide: JobApplicationsService,
           useValue: {},
+        },
+        {
+          provide: NotificationsService,
+          useValue: notificationsServiceMock,
         },
       ],
     }).compile();

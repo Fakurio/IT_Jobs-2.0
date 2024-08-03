@@ -10,6 +10,7 @@ import { Status } from "../entities/status.entity";
 import { AuthModule } from "../auth/auth.module";
 import { UsersModule } from "src/users/users.module";
 import { JobApplicationsModule } from "src/job-applications/job-applications.module";
+import { NotificationsModule } from "src/notifications/notifications.module";
 
 @Module({
   controllers: [JobPostsController],
@@ -19,6 +20,7 @@ import { JobApplicationsModule } from "src/job-applications/job-applications.mod
     TypeOrmModule.forFeature([JobPost, ContractType, Level, Status, Language]),
     UsersModule,
     forwardRef(() => JobApplicationsModule),
+    NotificationsModule,
   ],
   exports: [JobPostsService],
 })

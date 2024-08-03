@@ -10,6 +10,7 @@ import { User } from "../entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { Repository } from "typeorm";
 import { NotificationMessage } from "./interfaces/notification-message.interface";
+import { NotificationChannel } from "./types/notification-channel.type";
 
 @Injectable()
 export class NotificationsService {
@@ -61,13 +62,21 @@ export class NotificationsService {
   async notifyPostAuthor(
     authorID: number,
     postTitle: string,
-    applicantUsername: string
+    applicantUsername?: string
   ) {
     const authorSocketID = this.connectedUsers.get(authorID);
-    const notification = {
-      message: `${applicantUsername} applied for your post: ${postTitle}`,
-      type: NotificationTypeEnum.NEW_APPLICATION,
-    };
+    let notification: NotificationMessage;
+    if (applicantUsername) {
+      notification = {
+        message: `${applicantUsername} applied for your post: ${postTitle}`,
+        type: NotificationTypeEnum.NEW_APPLICATION,
+      };
+    } else {
+      notification = {
+        message: `Moderator has rejected your post: ${postTitle}`,
+        type: NotificationTypeEnum.POST_REJECTED,
+      };
+    }
     if (!authorSocketID) {
       try {
         await this.saveNotification(
@@ -79,7 +88,11 @@ export class NotificationsService {
         console.error(error);
       }
     } else {
-      this.sendNotification(authorSocketID, "new application", notification);
+      if (notification.type === NotificationTypeEnum.POST_REJECTED) {
+        this.sendNotification(authorSocketID, "post rejected", notification);
+      } else {
+        this.sendNotification(authorSocketID, "new application", notification);
+      }
     }
   }
 
@@ -122,7 +135,7 @@ export class NotificationsService {
 
   private sendNotification(
     socketID: string,
-    channel: string,
+    channel: NotificationChannel,
     message: NotificationMessage
   ) {
     this.server.to(socketID).emit(channel, message);

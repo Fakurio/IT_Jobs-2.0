@@ -42,6 +42,7 @@ describe("JobApplicationsService", () => {
   };
   const notificationsServiceMock = {
     notifyPostAuthor: jest.fn(() => Promise.resolve(true)),
+    notifyApplicant: jest.fn(() => Promise.resolve(true)),
   };
   const jobPosts = [
     { id: 1, title: "Test", author: { id: 1 } },
@@ -181,6 +182,7 @@ describe("JobApplicationsService", () => {
       id: 1,
       jobPost: { author: { id: 1 } },
       status: { status: StatusEnum.PENDING },
+      user: { id: 2 },
     });
     const user = { id: 1 } as User;
     expect(

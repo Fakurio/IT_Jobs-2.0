@@ -80,14 +80,14 @@ describe("NotificationsService", () => {
     expect(service["connectedUsers"].get(1)).toBeUndefined();
   });
 
-  it("should notify post author => author is offline", async () => {
+  it("should notify post author about new application => author is offline", async () => {
     service["connectedUsers"].set(1, "123");
     await service.notifyPostAuthor(3, "title", "username");
     expect(notifications.length).toBe(1);
     expect(notifications[0].receiver).toEqual({ id: 3 });
   });
 
-  it("should notify post author => author is online", () => {
+  it("should notify post author about new application => author is online", () => {
     service["connectedUsers"].set(3, "123");
     const server = {
       to: jest.fn(() => ({
@@ -97,6 +97,15 @@ describe("NotificationsService", () => {
     service.setServer(server);
     service.notifyPostAuthor(3, "title", "username");
     expect(notifications.length).toBe(0);
+  });
+
+  it("should notify post author about rejected post => author is offline", async () => {
+    service["connectedUsers"].set(1, "123");
+    await service.notifyPostAuthor(3, "title");
+    expect(notifications.length).toBe(1);
+    expect(notifications[0].content).toBe(
+      "Moderator has rejected your post: title"
+    );
   });
 
   it("should get notifications for user", async () => {

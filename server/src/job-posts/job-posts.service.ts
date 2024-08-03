@@ -18,6 +18,7 @@ import { unlinkSync } from "fs";
 import { join } from "path";
 import { UsersService } from "../users/users.service";
 import { JobApplicationsService } from "../job-applications/job-applications.service";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class JobPostsService {
@@ -33,7 +34,8 @@ export class JobPostsService {
     @InjectRepository(Language)
     private languagesRepository: Repository<Language>,
     private usersService: UsersService,
-    private jobApplicationsService: JobApplicationsService
+    private jobApplicationsService: JobApplicationsService,
+    private notificationsService: NotificationsService
   ) {}
 
   async getAll(): Promise<JobPost[]> {
@@ -149,15 +151,20 @@ export class JobPostsService {
       const post = await this.jobPostsRepository
         .createQueryBuilder("jobPost")
         .innerJoin("jobPost.status", "status")
+        .innerJoinAndSelect("jobPost.author", "author")
         .where("jobPost.id = :id", { id: postID })
         .andWhere("status.status = :status", { status: StatusEnum.PENDING })
         .getOneOrFail();
       post.status = <Status>await this.statusRepository.findOneBy({ status });
+      if (status === StatusEnum.REJECTED) {
+        this.notificationsService.notifyPostAuthor(post.author.id, post.title);
+      }
       await this.jobPostsRepository.save(post);
       return {
         message: "Post status updated",
       };
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(
         "Post with this ID does not exist or does not require verification"
       );
