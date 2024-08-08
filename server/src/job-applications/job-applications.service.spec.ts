@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { StatusEnum } from "../entities/status.entity";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 describe("JobApplicationsService", () => {
   let service: JobApplicationsService;
@@ -60,7 +60,7 @@ describe("JobApplicationsService", () => {
         },
         { provide: UsersService, useValue: usersServiceMock },
         { provide: JobPostsService, useValue: jobPostsServiceMock },
-        { provide: NotificationsService, useValue: notificationsServiceMock },
+        { provide: WebSocketsService, useValue: notificationsServiceMock },
       ],
     }).compile();
 

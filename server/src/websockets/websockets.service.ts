@@ -11,9 +11,11 @@ import { UsersService } from "../users/users.service";
 import { Repository } from "typeorm";
 import { NotificationMessage } from "./interfaces/notification-message.interface";
 import { NotificationChannel } from "./types/notification-channel.type";
+import { ChatMessage } from "./interfaces/chat-message.interface";
+import { WsException } from "@nestjs/websockets";
 
 @Injectable()
-export class NotificationsService {
+export class WebSocketsService {
   private server!: Server;
   private connectedUsers: Map<number, string>;
 
@@ -38,6 +40,7 @@ export class NotificationsService {
 
   removeUser(userID: number) {
     this.connectedUsers.delete(userID);
+    console.log(this.connectedUsers);
   }
 
   async getNotificationsForUser(userID: number) {
@@ -114,6 +117,19 @@ export class NotificationsService {
       }
     } else {
       this.sendNotification(applicantSocketID, "status change", notification);
+    }
+  }
+
+  async handleChatMessage(message: ChatMessage) {
+    const receiver = await this.usersService.findByUsername(message.receiver);
+    if (!receiver) {
+      throw new WsException("Receiver not found");
+    }
+    const receiverSocketID = this.connectedUsers.get(receiver.id);
+    if (!receiverSocketID) {
+      console.log("Receiver is not connected");
+    } else {
+      this.server.to(receiverSocketID).emit("chat message", message.content);
     }
   }
 

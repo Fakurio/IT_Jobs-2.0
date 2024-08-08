@@ -19,7 +19,7 @@ import { TypeormStore } from "connect-typeorm";
 import { ConfigService } from "@nestjs/config";
 import { UserSerializer } from "./serializers/user.serializer";
 import * as passport from "passport";
-import { NotificationsModule } from "src/notifications/notifications.module";
+import { WebSocketsModule } from "src/websockets/websockets.module";
 
 @Module({
   providers: [AuthService, HashService, LocalStrategy, UserSerializer],
@@ -30,7 +30,7 @@ import { NotificationsModule } from "src/notifications/notifications.module";
       session: true,
     }),
     TypeOrmModule.forFeature([Session]),
-    forwardRef(() => NotificationsModule),
+    forwardRef(() => WebSocketsModule),
   ],
   exports: [HashService],
 })

@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "../users/users.service";
 import { HashService } from "./hash/hash.service";
 import { BadRequestException, UnauthorizedException } from "@nestjs/common";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 describe("AuthService", () => {
   let authService: AuthService;
@@ -41,7 +41,7 @@ describe("AuthService", () => {
           provide: UsersService,
           useValue: usersServiceMock,
         },
-        { provide: NotificationsService, useValue: notificationsServiceMock },
+        { provide: WebSocketsService, useValue: notificationsServiceMock },
       ],
     }).compile();
     authService = module.get<AuthService>(AuthService);

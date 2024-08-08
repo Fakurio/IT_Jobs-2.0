@@ -1,6 +1,6 @@
 import { Module, forwardRef } from "@nestjs/common";
-import { NotificationsService } from "./notifications.service";
-import { NotificationsGateway } from "./notifications.gateway";
+import { WebSocketsService } from "./websockets.service";
+import { WebSocketsGateway } from "./websockets.gateway";
 import { Notification } from "src/entities/notification.entity";
 import { NotificationType } from "src/entities/notification-type.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -13,7 +13,7 @@ import { AuthModule } from "src/auth/auth.module";
     forwardRef(() => UsersModule),
     forwardRef(() => AuthModule),
   ],
-  providers: [NotificationsGateway, NotificationsService],
-  exports: [NotificationsService],
+  providers: [WebSocketsGateway, WebSocketsService],
+  exports: [WebSocketsService],
 })
-export class NotificationsModule {}
+export class WebSocketsModule {}

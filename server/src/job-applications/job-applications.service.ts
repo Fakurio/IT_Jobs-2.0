@@ -21,7 +21,7 @@ import { Status } from "../entities/status.entity";
 import { createReadStream } from "fs";
 import { join } from "path";
 import { UpdateApplicationStatusDTO } from "./dto/update-application-status.dto";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 @Injectable()
 export class JobApplicationsService {
@@ -31,7 +31,7 @@ export class JobApplicationsService {
     private usersService: UsersService,
     @Inject(forwardRef(() => JobPostsService))
     private jobPostsService: JobPostsService,
-    private notificationsService: NotificationsService
+    private webSocketsService: WebSocketsService
   ) {}
 
   async applyForJob(
@@ -60,7 +60,7 @@ export class JobApplicationsService {
       );
       await this.jobApplicationsRepository.save(jobApplication);
 
-      this.notificationsService.notifyPostAuthor(
+      this.webSocketsService.notifyPostAuthor(
         post.author.id,
         post.title,
         authenticatedUser.username
@@ -138,7 +138,7 @@ export class JobApplicationsService {
       application.status = status;
       await this.jobApplicationsRepository.save(application);
 
-      this.notificationsService.notifyApplicant(
+      this.webSocketsService.notifyApplicant(
         application.user.id,
         application.jobPost.title
       );

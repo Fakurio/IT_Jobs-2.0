@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { NotificationsService } from "./notifications.service";
+import { WebSocketsService } from "./websockets.service";
 import { UsersService } from "../users/users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Notification } from "../entities/notification.entity";
@@ -7,7 +7,7 @@ import { NotificationType } from "../entities/notification-type.entity";
 import { Socket, Server } from "socket.io";
 
 describe("NotificationsService", () => {
-  let service: NotificationsService;
+  let service: WebSocketsService;
   let usersServiceMock = {
     findByID: jest.fn((id) => Promise.resolve({ id })),
   };
@@ -47,7 +47,7 @@ describe("NotificationsService", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        NotificationsService,
+        WebSocketsService,
         { provide: UsersService, useValue: usersServiceMock },
         {
           provide: getRepositoryToken(Notification),
@@ -60,7 +60,7 @@ describe("NotificationsService", () => {
       ],
     }).compile();
 
-    service = module.get<NotificationsService>(NotificationsService);
+    service = module.get<WebSocketsService>(WebSocketsService);
     notifications = [];
   });
 

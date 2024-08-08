@@ -38,6 +38,10 @@ export class UsersService {
     return await this.usersRepository.findOne({ where: { id } });
   }
 
+  async findByUsername(username: string) {
+    return await this.usersRepository.findOne({ where: { username } });
+  }
+
   async checkForUsername(username: string) {
     return await this.usersRepository.exists({ where: { username } });
   }

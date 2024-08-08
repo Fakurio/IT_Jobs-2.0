@@ -10,7 +10,7 @@ import { Status } from "../entities/status.entity";
 import { AuthModule } from "../auth/auth.module";
 import { UsersModule } from "src/users/users.module";
 import { JobApplicationsModule } from "src/job-applications/job-applications.module";
-import { NotificationsModule } from "src/notifications/notifications.module";
+import { WebSocketsModule } from "src/websockets/websockets.module";
 
 @Module({
   controllers: [JobPostsController],
@@ -20,7 +20,7 @@ import { NotificationsModule } from "src/notifications/notifications.module";
     TypeOrmModule.forFeature([JobPost, ContractType, Level, Status, Language]),
     UsersModule,
     forwardRef(() => JobApplicationsModule),
-    NotificationsModule,
+    WebSocketsModule,
   ],
   exports: [JobPostsService],
 })

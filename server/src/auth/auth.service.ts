@@ -11,14 +11,14 @@ import LoginRequestSchema, { LoginRequestDto } from "./dto/login-request.dto";
 import { RegisterRequestDto } from "./dto/register-request.dto";
 import { Request, Response } from "express";
 import { RoleTypes } from "../entities/role.entity";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private hashService: HashService,
-    private notificationsService: NotificationsService
+    private webSocketsService: WebSocketsService
   ) {}
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
@@ -74,8 +74,9 @@ export class AuthService {
   }
 
   async login(req: any) {
-    const notifications =
-      await this.notificationsService.getNotificationsForUser(req.user.id);
+    const notifications = await this.webSocketsService.getNotificationsForUser(
+      req.user.id
+    );
     const response = {
       id: req.user.id,
       cv: req.user.cv,
@@ -83,7 +84,7 @@ export class AuthService {
       message: "Logged in",
       notifications: notifications,
     };
-    this.notificationsService.updateNotificationsReadStatus(notifications);
+    this.webSocketsService.updateNotificationsReadStatus(notifications);
     return response;
   }
 
@@ -110,7 +111,7 @@ export class AuthService {
       console.error(logoutError, sessionError);
       throw new InternalServerErrorException("Could not log out user");
     }
-    this.notificationsService.removeUser(authenticatedUser.id);
+    this.webSocketsService.removeUser(authenticatedUser.id);
     return {
       logout: true,
     };

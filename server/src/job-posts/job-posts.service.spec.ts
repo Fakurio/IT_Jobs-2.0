@@ -15,7 +15,7 @@ import { User } from "../entities/user.entity";
 import * as fs from "fs";
 import { UsersService } from "../users/users.service";
 import { JobApplicationsService } from "../job-applications/job-applications.service";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 describe("JobPostsService", () => {
   let service: JobPostsService;
@@ -150,7 +150,7 @@ describe("JobPostsService", () => {
           useValue: {},
         },
         {
-          provide: NotificationsService,
+          provide: WebSocketsService,
           useValue: notificationsServiceMock,
         },
       ],

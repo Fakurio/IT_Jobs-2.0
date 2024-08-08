@@ -5,8 +5,8 @@ import { AuthModule } from "./auth/auth.module";
 import { dataSourceOptions } from "./database/data-source";
 import { UsersModule } from "./users/users.module";
 import { JobPostsModule } from "./job-posts/job-posts.module";
-import { JobApplicationsModule } from './job-applications/job-applications.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { JobApplicationsModule } from "./job-applications/job-applications.module";
+import { WebSocketsModule } from "./websockets/websockets.module";
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     UsersModule,
     JobPostsModule,
     JobApplicationsModule,
-    NotificationsModule,
+    WebSocketsModule,
   ],
 })
 export class AppModule {}

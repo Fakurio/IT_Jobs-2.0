@@ -6,7 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { JobApplication } from "../entities/job-application.entity";
 import { UsersModule } from "../users/users.module";
 import { JobPostsModule } from "../job-posts/job-posts.module";
-import { NotificationsModule } from "src/notifications/notifications.module";
+import { WebSocketsModule } from "src/websockets/websockets.module";
 
 @Module({
   controllers: [JobApplicationsController],
@@ -16,7 +16,7 @@ import { NotificationsModule } from "src/notifications/notifications.module";
     TypeOrmModule.forFeature([JobApplication]),
     UsersModule,
     forwardRef(() => JobPostsModule),
-    NotificationsModule,
+    WebSocketsModule,
   ],
   exports: [JobApplicationsService],
 })

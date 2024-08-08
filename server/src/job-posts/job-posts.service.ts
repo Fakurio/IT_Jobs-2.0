@@ -18,7 +18,7 @@ import { unlinkSync } from "fs";
 import { join } from "path";
 import { UsersService } from "../users/users.service";
 import { JobApplicationsService } from "../job-applications/job-applications.service";
-import { NotificationsService } from "../notifications/notifications.service";
+import { WebSocketsService } from "../websockets/websockets.service";
 
 @Injectable()
 export class JobPostsService {
@@ -35,7 +35,7 @@ export class JobPostsService {
     private languagesRepository: Repository<Language>,
     private usersService: UsersService,
     private jobApplicationsService: JobApplicationsService,
-    private notificationsService: NotificationsService
+    private webSocketsService: WebSocketsService
   ) {}
 
   async getAll(): Promise<JobPost[]> {
@@ -157,7 +157,7 @@ export class JobPostsService {
         .getOneOrFail();
       post.status = <Status>await this.statusRepository.findOneBy({ status });
       if (status === StatusEnum.REJECTED) {
-        this.notificationsService.notifyPostAuthor(post.author.id, post.title);
+        this.webSocketsService.notifyPostAuthor(post.author.id, post.title);
       }
       await this.jobPostsRepository.save(post);
       return {

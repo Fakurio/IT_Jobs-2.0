@@ -21,7 +21,7 @@ import { AuthModule } from "src/auth/auth.module";
 import { NotificationType } from "src/entities/notification-type.entity";
 import { NotificationTypeSeeder } from "src/seeders/notification-type.seeder";
 import { forwardRef } from "@nestjs/common";
-import { NotificationsModule } from "src/notifications/notifications.module";
+import { WebSocketsModule } from "src/websockets/websockets.module";
 
 seeder({
   imports: [
@@ -41,7 +41,7 @@ seeder({
     }),
     forwardRef(() => UsersModule),
     forwardRef(() => AuthModule),
-    forwardRef(() => NotificationsModule),
+    forwardRef(() => WebSocketsModule),
   ],
 }).run([
   RoleSeeder,
