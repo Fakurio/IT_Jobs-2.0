@@ -12,7 +12,7 @@ import { Role, RoleTypes } from "../entities/role.entity";
 import { UpdateProfileDTO } from "./dto/update-profile.dto";
 import { Request, Response } from "express";
 import { HashService } from "../auth/hash/hash.service";
-import { createReadStream } from "fs";
+import { createReadStream, unlink } from "fs";
 import { join } from "path";
 import * as process from "node:process";
 import { JobPost } from "src/entities/job-post.entity";
@@ -97,6 +97,20 @@ export class UsersService {
       join(process.cwd(), `cv-files/${authenticatedUser.cv}`)
     );
     return new StreamableFile(cv);
+  }
+
+  async removeAuthenticatedUserCV(user: User) {
+    const cvPath = join(process.cwd(), `cv-files/${user.cv}`);
+    await new Promise((res, rej) => {
+      unlink(cvPath, (err) => {
+        if (err) {
+          throw new InternalServerErrorException("Failed to delete CV");
+        }
+        res("");
+      });
+    });
+    await this.usersRepository.update({ id: user.id }, { cv: null });
+    return { message: "CV deleted successfully" };
   }
 
   previewAuthenticatedUserCV(request: Request, response: Response) {

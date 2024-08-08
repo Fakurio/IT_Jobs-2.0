@@ -26,7 +26,7 @@ export class User {
   password!: string;
 
   @Column("varchar", { length: 30, nullable: true })
-  cv!: string;
+  cv!: string | null;
 
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({ name: "user_roles" })

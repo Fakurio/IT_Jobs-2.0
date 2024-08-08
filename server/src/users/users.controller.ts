@@ -9,6 +9,7 @@ import {
   UseFilters,
   UseGuards,
   UseInterceptors,
+  Delete,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import UpdateProfileSchema, {
@@ -21,9 +22,8 @@ import { CVDiskStorage } from "./multer-cv-storage/cv-disk-storage";
 import { IsAuthenticated } from "../auth/guards/is-authenticated";
 import { Request, Response } from "express";
 import { CheckCsrfTokenInterceptor } from "../auth/interceptors/check-csrf-token.interceptor";
-import { join } from "path";
-import * as process from "node:process";
 import { FileUploadFilter } from "../filters/file-upload.filter";
+import { User } from "../entities/user.entity";
 
 @Controller("users")
 export class UsersController {
@@ -58,6 +58,11 @@ export class UsersController {
     return this.usersService.previewAuthenticatedUserCV(request, response);
   }
 
-  // @Delete("/cv")
-  // removeAuthenticatedUserCV(@Req() request: Request) {}
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Delete("/cv")
+  removeAuthenticatedUserCV(@Req() request: Request) {
+    const authenticatedUser = request.user as User;
+    return this.usersService.removeAuthenticatedUserCV(authenticatedUser);
+  }
 }
