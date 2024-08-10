@@ -10,6 +10,7 @@ import { Role } from "./role.entity";
 import { JobPost } from "./job-post.entity";
 import { JobApplication } from "./job-application.entity";
 import { Notification } from "./notification.entity";
+import { Message } from "./message.entity";
 
 @Entity()
 export class User {
@@ -44,4 +45,10 @@ export class User {
 
   @OneToMany(() => Notification, (notification) => notification.receiver)
   notifications!: Notification[];
+
+  @OneToMany(() => Message, (message) => message.sender)
+  sentMessages!: Message[];
+
+  @OneToMany(() => Message, (message) => message.receiver)
+  receivedMessages!: Message[];
 }

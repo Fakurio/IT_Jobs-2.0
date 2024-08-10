@@ -6,10 +6,11 @@ import { NotificationType } from "src/entities/notification-type.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModule } from "src/users/users.module";
 import { AuthModule } from "src/auth/auth.module";
+import { Message } from "src/entities/message.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification, NotificationType]),
+    TypeOrmModule.forFeature([Notification, NotificationType, Message]),
     forwardRef(() => UsersModule),
     forwardRef(() => AuthModule),
   ],

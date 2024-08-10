@@ -13,6 +13,7 @@ import { NotificationMessage } from "./interfaces/notification-message.interface
 import { NotificationChannel } from "./types/notification-channel.type";
 import { ChatMessage } from "./interfaces/chat-message.interface";
 import { WsException } from "@nestjs/websockets";
+import { Message } from "src/entities/message.entity";
 
 @Injectable()
 export class WebSocketsService {
@@ -24,6 +25,8 @@ export class WebSocketsService {
     private notificationsRepository: Repository<Notification>,
     @InjectRepository(NotificationType)
     private notificationTypesRepository: Repository<NotificationType>,
+    @InjectRepository(Message)
+    private messagesRepository: Repository<Message>,
     private usersService: UsersService
   ) {
     this.connectedUsers = new Map();
@@ -122,14 +125,20 @@ export class WebSocketsService {
 
   async handleChatMessage(message: ChatMessage) {
     const receiver = await this.usersService.findByUsername(message.receiver);
+    const sender = (await this.usersService.findByUsername(
+      message.sender
+    )) as User;
     if (!receiver) {
       throw new WsException("Receiver not found");
     }
     const receiverSocketID = this.connectedUsers.get(receiver.id);
-    if (!receiverSocketID) {
-      console.log("Receiver is not connected");
-    } else {
+    if (receiverSocketID) {
       this.server.to(receiverSocketID).emit("chat message", message.content);
+      const messageEntity = new Message();
+      messageEntity.content = message.content;
+      messageEntity.receiver = receiver;
+      messageEntity.sender = sender;
+      await this.messagesRepository.save(messageEntity);
     }
   }
 

@@ -10,6 +10,7 @@ import { Status } from "../entities/status.entity";
 import { JobApplication } from "src/entities/job-application.entity";
 import { Notification } from "src/entities/notification.entity";
 import { NotificationType } from "src/entities/notification-type.entity";
+import { Message } from "src/entities/message.entity";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ export const dataSourceOptions = {
     JobApplication,
     Notification,
     NotificationType,
+    Message,
   ],
   synchronize: true,
 };
