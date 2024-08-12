@@ -124,6 +124,7 @@ export class WebSocketsService {
   }
 
   async handleChatMessage(message: ChatMessage) {
+    console.log("Wysyłam wiadomość", message);
     const receiver = await this.usersService.findByUsername(message.receiver);
     const sender = (await this.usersService.findByUsername(
       message.sender
@@ -134,12 +135,54 @@ export class WebSocketsService {
     const receiverSocketID = this.connectedUsers.get(receiver.id);
     if (receiverSocketID) {
       this.server.to(receiverSocketID).emit("chat message", message.content);
-      const messageEntity = new Message();
-      messageEntity.content = message.content;
-      messageEntity.receiver = receiver;
-      messageEntity.sender = sender;
-      await this.messagesRepository.save(messageEntity);
     }
+    await this.saveMessage(message.content, receiver, sender);
+  }
+
+  async getChatHistoryWithGivenUser(user: User, userUsername: string) {
+    const [sentMessages, sentParameters] = this.messagesRepository
+      .createQueryBuilder("message")
+      .innerJoin("message.sender", "sender")
+      .innerJoin("message.receiver", "receiver")
+      .select(["sender.username, message.content, message.createdAt"])
+      .where("sender.id = :userID", { userID: user.id })
+      .andWhere("receiver.username = :userUsername", { userUsername })
+      .getQueryAndParameters();
+    const [receivedMessages, receivedParameters] = this.messagesRepository
+      .createQueryBuilder("message")
+      .innerJoin("message.sender", "sender")
+      .innerJoin("message.receiver", "receiver")
+      .select(["sender.username, message.content, message.createdAt"])
+      .where("sender.username = :userUsername", { userUsername })
+      .andWhere("receiver.id = :userID", { userID: user.id })
+      .getQueryAndParameters();
+    const chatHistory = await this.messagesRepository.query(
+      `${sentMessages} UNION ALL ${receivedMessages}`,
+      [...sentParameters, ...receivedParameters]
+    );
+    return { chatHistory: this.sortChatHistory(chatHistory, userUsername) };
+  }
+
+  private sortChatHistory(
+    chatHistory: { content: string; createdAt: Date; username: string }[],
+    userUsername: string
+  ) {
+    chatHistory.sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    return chatHistory.map((msg) => {
+      return {
+        content: msg.content,
+        createdAt: msg.createdAt,
+        type: msg.username === userUsername ? "received" : "sent",
+      };
+    });
+  }
+
+  private async saveMessage(content: string, receiver: User, sender: User) {
+    const messageEntity = new Message();
+    messageEntity.content = content;
+    messageEntity.receiver = receiver;
+    messageEntity.sender = sender;
+    await this.messagesRepository.save(messageEntity);
   }
 
   private async saveNotification(

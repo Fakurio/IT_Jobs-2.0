@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModule } from "src/users/users.module";
 import { AuthModule } from "src/auth/auth.module";
 import { Message } from "src/entities/message.entity";
+import { ChatController } from "./chat.controller";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Message } from "src/entities/message.entity";
     forwardRef(() => AuthModule),
   ],
   providers: [WebSocketsGateway, WebSocketsService],
+  controllers: [ChatController],
   exports: [WebSocketsService],
 })
 export class WebSocketsModule {}
