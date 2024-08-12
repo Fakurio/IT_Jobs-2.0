@@ -4,7 +4,6 @@ import {
   MessageBody,
   OnGatewayInit,
   ConnectedSocket,
-  WsException,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { WebSocketsService } from "./websockets.service";
@@ -28,6 +27,11 @@ export class WebSocketsGateway implements OnGatewayInit {
     @MessageBody() userID: number
   ) {
     this.webSocketsService.addNewUser(client, userID);
+  }
+
+  @SubscribeMessage("disconnect user")
+  disconnectUser(@MessageBody() userID: number) {
+    this.webSocketsService.removeUser(userID);
   }
 
   @UseFilters(new WSExceptionsFilter())

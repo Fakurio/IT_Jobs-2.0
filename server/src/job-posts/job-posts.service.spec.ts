@@ -219,6 +219,8 @@ describe("JobPostsService", () => {
       favouritePosts: [],
       applications: [],
       notifications: [],
+      sentMessages: [],
+      receivedMessages: [],
     };
     const dto = {
       title: jobPostMock.title,

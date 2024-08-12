@@ -99,7 +99,7 @@ export class AuthService {
 
   async logout(request: Request, response: Response) {
     const authenticatedUser = request.user as User;
-    response.clearCookie("connect.sid", { sameSite: "strict" });
+    response.clearCookie("connect.sid", { sameSite: "lax" });
     const logoutError = await new Promise((resolve) => {
       request.logOut((error) => resolve(error));
     });

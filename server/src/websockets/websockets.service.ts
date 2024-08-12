@@ -13,7 +13,7 @@ import { NotificationMessage } from "./interfaces/notification-message.interface
 import { NotificationChannel } from "./types/notification-channel.type";
 import { ChatMessage } from "./interfaces/chat-message.interface";
 import { WsException } from "@nestjs/websockets";
-import { Message } from "src/entities/message.entity";
+import { Message } from "../entities/message.entity";
 
 @Injectable()
 export class WebSocketsService {

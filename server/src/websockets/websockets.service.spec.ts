@@ -5,6 +5,7 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import { Notification } from "../entities/notification.entity";
 import { NotificationType } from "../entities/notification-type.entity";
 import { Socket, Server } from "socket.io";
+import { Message } from "../entities/message.entity";
 
 describe("NotificationsService", () => {
   let service: WebSocketsService;
@@ -56,6 +57,10 @@ describe("NotificationsService", () => {
         {
           provide: getRepositoryToken(NotificationType),
           useValue: notificationTypesRepositoryMock,
+        },
+        {
+          provide: getRepositoryToken(Message),
+          useValue: {},
         },
       ],
     }).compile();
