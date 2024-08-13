@@ -7,10 +7,10 @@ import { JobPost } from "../entities/job-post.entity";
 import { Language } from "../entities/language.entity";
 import { Level } from "../entities/level.entity";
 import { Status } from "../entities/status.entity";
-import { JobApplication } from "src/entities/job-application.entity";
-import { Notification } from "src/entities/notification.entity";
-import { NotificationType } from "src/entities/notification-type.entity";
-import { Message } from "src/entities/message.entity";
+import { JobApplication } from "../entities/job-application.entity";
+import { Notification } from "../entities/notification.entity";
+import { NotificationType } from "../entities/notification-type.entity";
+import { Message } from "../entities/message.entity";
 
 dotenv.config();
 

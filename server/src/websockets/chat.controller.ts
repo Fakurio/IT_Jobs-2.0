@@ -7,8 +7,8 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { WebSocketsService } from "./websockets.service";
-import { IsAuthenticated } from "src/auth/guards/is-authenticated";
-import { CheckCsrfTokenInterceptor } from "src/auth/interceptors/check-csrf-token.interceptor";
+import { IsAuthenticated } from "../auth/guards/is-authenticated";
+import { CheckCsrfTokenInterceptor } from "../auth/interceptors/check-csrf-token.interceptor";
 import { Request } from "express";
 import { User } from "../entities/user.entity";
 

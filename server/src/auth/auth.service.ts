@@ -12,13 +12,18 @@ import { RegisterRequestDto } from "./dto/register-request.dto";
 import { Request, Response } from "express";
 import { RoleTypes } from "../entities/role.entity";
 import { WebSocketsService } from "../websockets/websockets.service";
+import { Session } from "../entities/session.entity";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private hashService: HashService,
-    private webSocketsService: WebSocketsService
+    private webSocketsService: WebSocketsService,
+    @InjectRepository(Session)
+    private sessionsRepository: Repository<Session>
   ) {}
 
   async validateUser(loginRequestDTO: LoginRequestDto): Promise<User> {
@@ -95,6 +100,20 @@ export class AuthService {
       cv: authenticatedUser.cv,
       username: authenticatedUser.username,
     };
+  }
+
+  async getSessionExpiryTimeForUser(userID: number) {
+    const user = (await this.usersService.findByID(userID)) as User;
+    const session = await this.sessionsRepository
+      .createQueryBuilder("session")
+      .select("session.expiredAt")
+      .where("JSON_EXTRACT(session.json, '$.passport.user') = :email", {
+        email: user.email,
+      })
+      .andWhere("session.destroyedAt IS NULL")
+      .andWhere("FROM_UNIXTIME(session.expiredAt / 1000) > NOW()")
+      .getOneOrFail();
+    return session.expiredAt;
   }
 
   async logout(request: Request, response: Response) {

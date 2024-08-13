@@ -36,7 +36,7 @@ export class WebSocketsService {
     this.server = server;
   }
 
-  addNewUser(client: Socket, userID: number) {
+  async addNewUser(client: Socket, userID: number) {
     this.connectedUsers.set(userID, client.id);
     console.log(this.connectedUsers);
   }
@@ -127,7 +127,7 @@ export class WebSocketsService {
     console.log("Wysyłam wiadomość", message);
     const receiver = await this.usersService.findByUsername(message.receiver);
     const sender = (await this.usersService.findByUsername(
-      message.sender
+      message.sender.username
     )) as User;
     if (!receiver) {
       throw new WsException("Receiver not found");
@@ -171,7 +171,7 @@ export class WebSocketsService {
     return chatHistory.map((msg) => {
       return {
         content: msg.content,
-        createdAt: msg.createdAt,
+        createdAt: new Date(`${msg.createdAt} UTC`),
         type: msg.username === userUsername ? "received" : "sent",
       };
     });

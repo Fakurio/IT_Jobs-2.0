@@ -6,7 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { JobApplication } from "../entities/job-application.entity";
 import { UsersModule } from "../users/users.module";
 import { JobPostsModule } from "../job-posts/job-posts.module";
-import { WebSocketsModule } from "src/websockets/websockets.module";
+import { WebSocketsModule } from "../websockets/websockets.module";
 
 @Module({
   controllers: [JobApplicationsController],

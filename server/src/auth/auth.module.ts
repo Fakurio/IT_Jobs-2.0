@@ -19,7 +19,7 @@ import { TypeormStore } from "connect-typeorm";
 import { ConfigService } from "@nestjs/config";
 import { UserSerializer } from "./serializers/user.serializer";
 import * as passport from "passport";
-import { WebSocketsModule } from "src/websockets/websockets.module";
+import { WebSocketsModule } from "../websockets/websockets.module";
 
 @Module({
   providers: [AuthService, HashService, LocalStrategy, UserSerializer],
@@ -32,7 +32,7 @@ import { WebSocketsModule } from "src/websockets/websockets.module";
     TypeOrmModule.forFeature([Session]),
     forwardRef(() => WebSocketsModule),
   ],
-  exports: [HashService],
+  exports: [HashService, AuthService],
 })
 export class AuthModule implements NestModule {
   private expressSession: any;

@@ -4,6 +4,8 @@ import { UsersService } from "../users/users.service";
 import { HashService } from "./hash/hash.service";
 import { BadRequestException, UnauthorizedException } from "@nestjs/common";
 import { WebSocketsService } from "../websockets/websockets.service";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Session } from "../entities/session.entity";
 
 describe("AuthService", () => {
   let authService: AuthService;
@@ -23,6 +25,7 @@ describe("AuthService", () => {
       users.push({ email: dto.email, password: dto.password })
     ),
     checkForUsername: jest.fn(),
+    findByID: jest.fn(() => Promise.resolve({ email: "" })),
   };
   let hashServiceMock = {
     verifyPassword: jest.fn((hash, password) => hash === password),
@@ -30,6 +33,13 @@ describe("AuthService", () => {
   };
   let notificationsServiceMock = {
     removeUser: jest.fn(),
+  };
+  let sessionsRepositoryMock = {
+    createQueryBuilder: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getOneOrFail: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -42,6 +52,10 @@ describe("AuthService", () => {
           useValue: usersServiceMock,
         },
         { provide: WebSocketsService, useValue: notificationsServiceMock },
+        {
+          provide: getRepositoryToken(Session),
+          useValue: sessionsRepositoryMock,
+        },
       ],
     }).compile();
     authService = module.get<AuthService>(AuthService);
@@ -169,5 +183,14 @@ describe("AuthService", () => {
     expect(requestMock.logOut).toHaveBeenCalledTimes(1);
     expect(requestMock.session.destroy).toHaveBeenCalledTimes(1);
     expect(responseMock.clearCookie).toHaveBeenCalledTimes(1);
+  });
+
+  it("should get session expiry time for user", async () => {
+    const user = { id: 1 };
+    const session = { expiredAt: new Date() };
+    sessionsRepositoryMock.getOneOrFail.mockResolvedValue(session);
+    expect(await authService.getSessionExpiryTimeForUser(user.id)).toEqual(
+      session.expiredAt
+    );
   });
 });

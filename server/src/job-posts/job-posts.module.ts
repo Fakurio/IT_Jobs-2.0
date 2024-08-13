@@ -8,9 +8,9 @@ import { Level } from "../entities/level.entity";
 import { Language } from "../entities/language.entity";
 import { Status } from "../entities/status.entity";
 import { AuthModule } from "../auth/auth.module";
-import { UsersModule } from "src/users/users.module";
-import { JobApplicationsModule } from "src/job-applications/job-applications.module";
-import { WebSocketsModule } from "src/websockets/websockets.module";
+import { UsersModule } from "../users/users.module";
+import { JobApplicationsModule } from "../job-applications/job-applications.module";
+import { WebSocketsModule } from "../websockets/websockets.module";
 
 @Module({
   controllers: [JobPostsController],

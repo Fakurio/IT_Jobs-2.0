@@ -8,8 +8,9 @@ import {
 import { Server, Socket } from "socket.io";
 import { WebSocketsService } from "./websockets.service";
 import { ChatMessage } from "./interfaces/chat-message.interface";
-import { UseFilters } from "@nestjs/common";
+import { UseFilters, UseGuards } from "@nestjs/common";
 import { WSExceptionsFilter } from "../filters/ws.filter";
+import { IsSessionValidGuard } from "./guards/is-session-valid.guard";
 
 @WebSocketGateway({
   cors: { origin: "http://localhost:3001" },
@@ -35,6 +36,7 @@ export class WebSocketsGateway implements OnGatewayInit {
   }
 
   @UseFilters(new WSExceptionsFilter())
+  @UseGuards(IsSessionValidGuard)
   @SubscribeMessage("chat message")
   handleChatMessage(@MessageBody() message: ChatMessage) {
     return this.webSocketsService.handleChatMessage(message);
