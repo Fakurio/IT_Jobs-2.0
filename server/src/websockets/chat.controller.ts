@@ -29,4 +29,13 @@ export class ChatController {
       userUsername
     );
   }
+
+  //return all users' usernames that the authenticated user has chatted with
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/users")
+  async getChatUsernames(@Req() request: Request) {
+    const authenticatedUser = request.user as User;
+    return await this.webSocketsService.getChatUsernames(authenticatedUser);
+  }
 }

@@ -163,6 +163,29 @@ export class WebSocketsService {
     return { chatHistory: this.sortChatHistory(chatHistory, userUsername) };
   }
 
+  async getChatUsernames(user: User) {
+    const [sentUsernames, sentParameters] = this.messagesRepository
+      .createQueryBuilder("message")
+      .select("receiver.username", "username")
+      .innerJoin("message.sender", "sender")
+      .innerJoin("message.receiver", "receiver")
+      .where("sender.id = :userID", { userID: user.id })
+      .getQueryAndParameters();
+    const [receivedUsernames, receivedParameters] = this.messagesRepository
+      .createQueryBuilder("message")
+      .select("sender.username", "username")
+      .innerJoin("message.receiver", "receiver")
+      .innerJoin("message.sender", "sender")
+      .where("receiver.id = :userID", { userID: user.id })
+      .getQueryAndParameters();
+
+    const chatUsernames = await this.messagesRepository.query(
+      `${sentUsernames} UNION ${receivedUsernames}`,
+      [...sentParameters, ...receivedParameters]
+    );
+    return { chatUsernames: chatUsernames.map((el) => el.username) };
+  }
+
   private sortChatHistory(
     chatHistory: { content: string; createdAt: Date; username: string }[],
     userUsername: string
