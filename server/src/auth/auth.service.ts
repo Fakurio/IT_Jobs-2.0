@@ -86,6 +86,7 @@ export class AuthService {
       id: req.user.id,
       cv: req.user.cv,
       username: req.user.username,
+      roles: req.user.roles,
       message: "Logged in",
       notifications: notifications,
     };
