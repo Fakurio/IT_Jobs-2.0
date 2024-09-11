@@ -21,7 +21,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { LogoFileValidationPipe } from "./pipes/logo-file-validation.pipe";
 import { IsAuthenticated } from "../auth/guards/is-authenticated";
 import { CheckCsrfTokenInterceptor } from "../auth/interceptors/check-csrf-token.interceptor";
-import { Request, application } from "express";
+import { Request } from "express";
 import { User } from "../entities/user.entity";
 import { LogoDiskStorage } from "./multer-logo-storage/logo-disk-storage";
 import { FileUploadFilter } from "../filters/file-upload.filter";
@@ -132,6 +132,13 @@ export class JobPostsController {
       postID,
       status
     );
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
+  @Get("/:id")
+  getPostDetails(@Param("id", ParseIntPipe) postID: number) {
+    return this.jobPostsService.getPostDetails(postID);
   }
 
   @UseFilters(FileUploadFilter)

@@ -208,6 +208,24 @@ export class JobPostsService {
       statusQueryString
     );
   }
+
+  async getPostDetails(postID: number) {
+    const post = await this.jobPostsRepository
+      .createQueryBuilder("jobPost")
+      .innerJoin("jobPost.level", "level")
+      .innerJoin("jobPost.contractType", "contractType")
+      .innerJoin("jobPost.languages", "languages")
+      .innerJoin("jobPost.status", "status")
+      .select(["jobPost", "level", "contractType", "languages"])
+      .where("jobPost.id = :id", { id: postID })
+      .andWhere("status.status = :status", { status: StatusEnum.ACCEPTED })
+      .getOne();
+    if (!post) {
+      throw new BadRequestException("Post with this ID does not exist");
+    }
+    return post;
+  }
+
   async updateAuthenticatedUserPost(
     postID: number,
     updatePostDTO: UpdatePostDTO,
