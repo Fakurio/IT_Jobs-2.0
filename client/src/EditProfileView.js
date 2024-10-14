@@ -18,33 +18,43 @@ const EditProfileView = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('username', username);
-    formData.append('oldPassword', oldPassword);
-    formData.append('newPassword', newPassword);
+
+    if (username) {
+      formData.append('username', username);
+    }
+    if (oldPassword) {
+      formData.append('oldPassword', oldPassword);
+    }
+    if (newPassword) {
+      formData.append('newPassword', newPassword);
+    }
     if (cvFile) {
       formData.append('cv', cvFile);
     }
 
-    try {
-      const response = await fetch('http://localhost:3000/users', {
-        method: 'PATCH',
-        headers: {
-          "X-CSRF-Token": localStorage.getItem("token"),
-        },
-        credentials: "include",
-        body: formData,
-      });
+    if (formData.has('username') || formData.has('oldPassword') || formData.has('newPassword') || formData.has('cv')) {
+      try {
+        const response = await fetch('http://localhost:3000/users', {
+          method: 'PATCH',
+          headers: {
+            "X-CSRF-Token": localStorage.getItem("token"),
+          },
+          credentials: "include",
+          body: formData,
+        });
 
-      if (response.ok) {
-        setMessage('Profile updated successfully!');
-        navigate('/main');
-      } else {
-        const errorResponse = await response.json();
-        setMessage(`Error: ${errorResponse.message}`);
+        if (response.ok) {
+          setMessage('Profile updated successfully!');
+        } else {
+          const errorResponse = await response.json();
+          setMessage(`Error: ${errorResponse.message}`);
+        }
+      } catch (error) {
+        setMessage(`Error: ${error.message}`);
+        console.error('Profile update error:', error);
       }
-    } catch (error) {
-      setMessage(`Error: ${error.message}`);
-      console.error('Profile update error:', error);
+    } else {
+      setMessage('Please update at least one field.');
     }
   };
 
@@ -58,7 +68,7 @@ const EditProfileView = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            required
+            placeholder="Update username"
           />
         </div>
         <div className="form-group">
@@ -67,7 +77,7 @@ const EditProfileView = () => {
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            required
+            placeholder="Enter old password"
           />
         </div>
         <div className="form-group">
@@ -76,6 +86,7 @@ const EditProfileView = () => {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
           />
         </div>
         <div className="form-group">

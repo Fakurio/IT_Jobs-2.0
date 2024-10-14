@@ -45,17 +45,17 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <Link to="/main">Home</Link>
-      {!isModerator && (
+      {user ? (
         <>
-          <Link to="/add-post">Add post</Link>
-          <Link to="/edit-post">Edit post</Link>
-          <Link to="/my-posts">My posts</Link>
-          <Link to="/my-applications">My applications</Link>
-        </>
-      )}
-      <div className="user-menu">
-        {user ? (
-          <>
+          {!isModerator && (
+            <>
+              <Link to="/add-post">Add post</Link>
+              <Link to="/edit-post">Edit post</Link>
+              <Link to="/my-posts">My posts</Link>
+              <Link to="/my-applications">My applications</Link>
+            </>
+          )}
+          <div className="user-menu">
             <span>{user.username}</span>
             <div className="dropdown">
               <button className="dropbtn">▼</button>
@@ -64,11 +64,11 @@ const Navbar = () => {
                 <button onClick={handleLogout}>Logout</button>
               </div>
             </div>
-          </>
-        ) : (
-          <Link to="/login">Login</Link>
-        )}
-      </div>
+          </div>
+        </>
+      ) : (
+        <Link to="/login">Login</Link>
+      )}
     </nav>
   );
 };
