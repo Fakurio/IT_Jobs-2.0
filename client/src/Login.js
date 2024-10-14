@@ -35,8 +35,6 @@ const Login = () => {
 
         localStorage.setItem('token', response.headers.get("x-csrf-token"));
         localStorage.setItem('user', JSON.stringify(data));
-
-        alert('Zalogowano');
         e.target.email.value = "";
         e.target.password.value = "";
         navigate('/main');
