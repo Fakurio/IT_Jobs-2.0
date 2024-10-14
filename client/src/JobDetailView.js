@@ -55,7 +55,6 @@ const JobDetailView = () => {
 
   const handleDragOver = (e) => {
     e.preventDefault();
-    
   };
 
   const handleApply = async () => {
@@ -146,25 +145,29 @@ const JobDetailView = () => {
         !fromApplications && (
           <div className="application-section">
             <h3>Apply for this Job</h3>
-            <>
-              <label 
-                htmlFor="cvUpload" 
-                className="file-input-label" 
-                onDrop={handleDrop} 
-                onDragOver={handleDragOver}
-              >
-                <img src={uploadFileIcon} alt="Upload icon" width="54" height="44" />
-                {cvFile ? <p>{cvFile.name}</p> : <p>Drag and drop your CV here or click to upload (PDF only)</p>}
-                <input 
-                  id="cvUpload" 
-                  type="file" 
-                  accept="application/pdf" 
-                  onChange={handleFileChange} 
-                  className="file-input"
-                />
-              </label>
-              <button className="apply-btn" onClick={handleApply}>Apply</button>
-            </>
+            {user ? (
+              <>
+                <label 
+                  htmlFor="cvUpload" 
+                  className="file-input-label" 
+                  onDrop={handleDrop} 
+                  onDragOver={handleDragOver}
+                >
+                  <img src={uploadFileIcon} alt="Upload icon" width="54" height="44" />
+                  {cvFile ? <p>{cvFile.name}</p> : <p>Drag and drop your CV here or click to upload (PDF only)</p>}
+                  <input 
+                    id="cvUpload" 
+                    type="file" 
+                    accept="application/pdf" 
+                    onChange={handleFileChange} 
+                    className="file-input"
+                  />
+                </label>
+                <button className="apply-btn" onClick={handleApply}>Apply</button>
+              </>
+            ) : (
+              <p>You must be logged in to apply for this job.</p>
+            )}
             {applicationStatus && <p>{applicationStatus}</p>}
           </div>
         )
