@@ -1,0 +1,65 @@
+.moderator-job-detail {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #1e2735;
+    color: white;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  p {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  ul {
+    list-style-position: inside;
+    padding-left: 0;
+    text-align: center;
+  }
+  
+  li {
+    margin-bottom: 5px;
+  }
+  
+  .job-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .accept-btn, .reject-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    min-width: 120px;
+  }
+  
+  .accept-btn {
+    background-color: #27ae60;
+    color: white;
+  }
+  
+  .reject-btn {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .accept-btn:hover {
+    background-color: #2ecc71;
+  }
+  
+  .reject-btn:hover {
+    background-color: #c0392b;
+  }
+  

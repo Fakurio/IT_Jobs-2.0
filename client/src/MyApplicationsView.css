@@ -1,0 +1,72 @@
+.my-applications-view {
+    padding: 1rem;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    margin-left: 36%;
+  }
+  
+  .tabs button {
+    padding: 20px 40px;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 1%;
+  }
+  
+  .tabs button.active {
+    background-color: #357ab8;
+  }
+  
+  .tabs button:hover {
+    background-color: #357ab8;
+  }
+  
+  .applications-content {
+    margin-top: 20px;
+  }
+  
+  .applications-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .application-item {
+    padding: 1rem;
+    background-color: #1e2735;
+    color: #fff;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+  
+  .download-cv-btn {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+  }
+  
+  .download-cv-btn:hover {
+    background-color: #218838;
+  }
+  
+  .error {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  h2 {
+    margin-top: 20px;
+    color: #fff;
+    text-align: center;
+  }
+  
