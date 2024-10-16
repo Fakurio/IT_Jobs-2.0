@@ -270,6 +270,9 @@ export class JobPostsService {
         language: In(updatePostDTO.languages),
       });
     }
+    post.status = <Status>(
+      await this.statusRepository.findOneBy({ status: StatusEnum.PENDING })
+    );
     await this.jobPostsRepository.save(post);
     return {
       message:
