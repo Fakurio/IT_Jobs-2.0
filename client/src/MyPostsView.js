@@ -7,58 +7,45 @@ const MyPostsView = () => {
   const [error, setError] = useState(null);
   const [activePostId, setActivePostId] = useState(null);
 
-  useEffect(() => {
-    const fetchUserPosts = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/job-posts`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            "X-CSRF-Token": localStorage.getItem("token"),
-          },
-          credentials: "include"
-        });
+  const [activeTab, setActiveTab] = useState('pending');
+  const [counts, setCounts] = useState({ pending: 0, accepted: 0, rejected: 0 });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch posts');
-        }
+  const fetchUserPosts = async (status) => {
+    try {
+      const response = await fetch(`http://localhost:3000/job-posts/me?status=${status}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-CSRF-Token": localStorage.getItem("token"),
+        },
+        credentials: "include"
+      });
 
-        const data = await response.json();
-        const user = JSON.parse(localStorage.getItem('user'));
-        const userPosts = data.filter(post => post.author.id === user.id);
-        
-        const postsWithApplications = await Promise.all(
-          userPosts.map(async (post) => {
-            const appResponse = await fetch(`http://localhost:3000/job-posts/${post.id}/applications?status=Pending`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                "X-CSRF-Token": localStorage.getItem("token"),
-              },
-              credentials: "include"
-            });
-            if (appResponse.ok) {
-              const appsData = await appResponse.json();
-              return { ...post, applications: appsData.length > 0 ? appsData : null };
-            }
-            return { ...post, applications: null };
-          })
-        );
-
-        const sortedPosts = postsWithApplications.sort((a, b) => {
-          if (a.applications && !b.applications) return -1;
-          if (!a.applications && b.applications) return 1;
-          return 0;
-        });
-
-        setPosts(sortedPosts);
-      } catch (error) {
-        setError(error.message);
-        console.error('Error fetching posts:', error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
       }
-    };
 
-    fetchUserPosts();
+      const data = await response.json();
+
+      setPosts(data);
+      setCounts((prevCounts) => ({
+        ...prevCounts,
+        [status]: data.length,
+      }));
+    } catch (error) {
+      setError(error.message);
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserPosts(activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    ['pending', 'accepted', 'rejected'].forEach(status => {
+      fetchUserPosts(status);
+    });
   }, []);
 
   const fetchApplications = async (postId) => {
@@ -68,7 +55,7 @@ const MyPostsView = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/job-posts/${postId}/applications?status=Pending`, {
+      const response = await fetch(`http://localhost:3000/job-posts/${postId}/applications?status=${activeTab}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -124,6 +111,11 @@ const MyPostsView = () => {
         credentials: "include"
       });
 
+      if (response.status === 404) {
+        alert("User has removed their CV.");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Failed to download CV');
       }
@@ -146,6 +138,21 @@ const MyPostsView = () => {
   return (
     <div className="my-posts-view">
       <h1>My Job Posts</h1>
+
+      <div className="tabs">
+        <button className={activeTab === 'pending' ? 'active' : ''} onClick={() => setActiveTab('pending')}>
+          Pending ({counts.pending})
+        </button>
+        <button className={activeTab === 'accepted' ? 'active' : ''} onClick={() => setActiveTab('accepted')}>
+          Accepted ({counts.accepted})
+        </button>
+        <button className={activeTab === 'rejected' ? 'active' : ''} onClick={() => setActiveTab('rejected')}>
+          Rejected ({counts.rejected})
+        </button>
+      </div>
+
+      <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+
       {posts.length === 0 ? (
         <p>No job posts available.</p>
       ) : (
@@ -154,22 +161,21 @@ const MyPostsView = () => {
             <React.Fragment key={post.id}>
               <li className="post-item">
                 <div className="post-header">
-                  {}
                   <div className="company-logo">
                     <img src={`http://localhost:3000/logo/${post.logo}`} alt="Company Logo" />
                   </div>
                   <h3 className="job-title">{post.title}</h3>
                 </div>
 
-                {}
-                {post.applications !== null && (
+                
+                {post.applications && post.applications.length > 0 && (
                   <button className="view-applications-btn" onClick={() => fetchApplications(post.id)}>
-                    {activePostId === post.id ? "Hide Applications" : `View Applications (${post.applications ? post.applications.length : 0})`}
+                    {activePostId === post.id ? "Hide Applications" : `View Applications (${post.applications.length})`}
                   </button>
                 )}
               </li>
 
-              {}
+              
               {activePostId === post.id && applications[post.id] && applications[post.id].length > 0 && (
                 <div className="applications-section">
                   <h4>Applications:</h4>
@@ -178,7 +184,9 @@ const MyPostsView = () => {
                       <li key={application.id} className="application-item">
                         <div className="application-details">
                           <p>Applicant: {application.user.username}</p>
-                          <button onClick={() => downloadCV(application.id)} className="download-cv-btn">Download CV</button>
+                          <button onClick={() => downloadCV(application.id)} className="download-cv-btn">
+                            {application.user.cv ? "Download CV" : "User removed CV"}
+                          </button>
                         </div>
                         <div className="application-actions">
                           <button onClick={() => updateApplicationStatus(application.id, 'Accepted', post.id)} className="accept-btn">Accept</button>

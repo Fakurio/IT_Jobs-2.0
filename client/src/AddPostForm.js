@@ -103,7 +103,7 @@ const AddPostForm = () => {
 
       const data = await response.json();
       console.log('Dodano nowe ogłoszenie:', data);
-      alert('Nowe ogłoszenie zostało dodane');
+      alert('Ogłoszenie będzie widoczne po zatwierdzeniu przez moderatora');
       setCompanyName('');
       setTitle('');
       setSalary('');
