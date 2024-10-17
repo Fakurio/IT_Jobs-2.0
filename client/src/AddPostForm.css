@@ -1,4 +1,3 @@
-
 .add-post-form {
   width: 100%;
   height: 150%;
@@ -17,6 +16,12 @@
   margin-bottom: 20px;
   font-size: 24px;
   font-weight: 600;
+}
+
+.add-post-form__error {
+  text-align: center;
+  color: rgb(229, 19, 19);
+  font-size: 19px;
 }
 
 .add-post-form input[type="text"],
@@ -61,8 +66,13 @@
 
 .add-post-form .languages-checkboxes label {
   display: block;
-  margin-bottom: 5px;
   font-weight: 600;
+}
+
+.languages-checkboxes__element {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
 }
 
 .add-post-form .languages-checkboxes div {
@@ -114,7 +124,6 @@
   margin-bottom: 5%;
 }
 
-
 @media (max-width: 480px) {
   .add-post-form {
     padding: 10px;
@@ -144,5 +153,3 @@ body,
 #root {
   height: 100%;
 }
-
-
