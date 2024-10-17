@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './EditProfileView.css';
+import React, { useState, useEffect } from "react";
+import "./EditProfileView.css";
 
 const EditProfileView = () => {
-  const [username, setUsername] = useState('');
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [cvFile, setCvFile] = useState(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [existingCv, setExistingCv] = useState(null);
-  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchCurrentCv = async () => {
       try {
-        const response = await fetch('http://localhost:3000/users/cv/static', {
-          method: 'GET',
+        const response = await fetch("http://localhost:3000/users/cv/static", {
+          method: "GET",
           headers: {
             "X-CSRF-Token": localStorage.getItem("token"),
           },
@@ -28,7 +27,7 @@ const EditProfileView = () => {
           setExistingCv(null);
         }
       } catch (error) {
-        console.error('Error fetching CV status:', error);
+        console.error("Error fetching CV status:", error);
       }
     };
 
@@ -44,15 +43,24 @@ const EditProfileView = () => {
 
     const formData = new FormData();
 
-    if (username) formData.append('username', username);
-    if (oldPassword) formData.append('oldPassword', oldPassword);
-    if (newPassword) formData.append('newPassword', newPassword);
-    if (cvFile) formData.append('cv', cvFile);
+    if (username) formData.append("username", username);
+    if (oldPassword) formData.append("oldPassword", oldPassword);
+    if (newPassword) formData.append("newPassword", newPassword);
+    if (cvFile) {
+      formData.append("cv", cvFile);
+      user.cv = true;
+      localStorage.setItem("user", JSON.stringify(user));
+    }
 
-    if (formData.has('username') || formData.has('oldPassword') || formData.has('newPassword') || formData.has('cv')) {
+    if (
+      formData.has("username") ||
+      formData.has("oldPassword") ||
+      formData.has("newPassword") ||
+      formData.has("cv")
+    ) {
       try {
-        const response = await fetch('http://localhost:3000/users', {
-          method: 'PATCH',
+        const response = await fetch("http://localhost:3000/users", {
+          method: "PATCH",
           headers: {
             "X-CSRF-Token": localStorage.getItem("token"),
           },
@@ -61,24 +69,24 @@ const EditProfileView = () => {
         });
 
         if (response.ok) {
-          setMessage('Profile updated successfully!');
+          setMessage("Profile updated successfully!");
         } else {
           const errorResponse = await response.json();
           setMessage(`Error: ${errorResponse.message}`);
         }
       } catch (error) {
         setMessage(`Error: ${error.message}`);
-        console.error('Profile update error:', error);
+        console.error("Profile update error:", error);
       }
     } else {
-      setMessage('Please update at least one field.');
+      setMessage("Please update at least one field.");
     }
   };
 
   const handleDownloadCv = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/cv', {
-        method: 'GET',
+      const response = await fetch("http://localhost:3000/users/cv", {
+        method: "GET",
         headers: {
           "X-CSRF-Token": localStorage.getItem("token"),
         },
@@ -89,23 +97,23 @@ const EditProfileView = () => {
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'my_cv.pdf';
+      a.download = "my_cv.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading CV:', error);
-      setMessage('Error downloading CV.');
+      console.error("Error downloading CV:", error);
+      setMessage("Error downloading CV.");
     }
   };
 
   const handleDeleteCv = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/cv', {
-        method: 'DELETE',
+      const response = await fetch("http://localhost:3000/users/cv", {
+        method: "DELETE",
         headers: {
           "X-CSRF-Token": localStorage.getItem("token"),
         },
@@ -113,14 +121,16 @@ const EditProfileView = () => {
       });
 
       if (response.ok) {
-        setMessage('CV deleted successfully.');
+        setMessage("CV deleted successfully.");
         setExistingCv(null);
+        user.cv = null;
+        localStorage.setItem("user", JSON.stringify(user));
       } else {
-        setMessage('Error deleting CV.');
+        setMessage("Error deleting CV.");
       }
     } catch (error) {
-      console.error('Error deleting CV:', error);
-      setMessage('Error deleting CV.');
+      console.error("Error deleting CV:", error);
+      setMessage("Error deleting CV.");
     }
   };
 
@@ -162,18 +172,30 @@ const EditProfileView = () => {
             <button className="download-cv-btn" onClick={handleDownloadCv}>
               Download CV
             </button>
-            <button type="button" onClick={handleDeleteCv} className="delete-cv-btn">
+            <button
+              type="button"
+              onClick={handleDeleteCv}
+              className="delete-cv-btn"
+            >
               Remove CV
             </button>
             <div className="form-group">
               <label>Update CV:</label>
-              <input type="file" onChange={handleCvUpload} accept="application/pdf" />
+              <input
+                type="file"
+                onChange={handleCvUpload}
+                accept="application/pdf"
+              />
             </div>
           </div>
         ) : (
           <div className="form-group">
             <label>Upload CV:</label>
-            <input type="file" onChange={handleCvUpload} accept="application/pdf" />
+            <input
+              type="file"
+              onChange={handleCvUpload}
+              accept="application/pdf"
+            />
           </div>
         )}
         <button type="submit">Update Profile</button>

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import './JobDetailView.css';
-import uploadFileIcon from './upload_file.png';
+import React, { useEffect, useState } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import "./JobDetailView.css";
+import uploadFileIcon from "./upload_file.png";
 
 const JobDetailView = () => {
   const { id } = useParams();
@@ -10,34 +10,34 @@ const JobDetailView = () => {
   const [jobDetails, setJobDetails] = useState(null);
   const [error, setError] = useState(null);
   const [cvFile, setCvFile] = useState(null);
-  const [applicationStatus, setApplicationStatus] = useState('');
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [applicationStatus, setApplicationStatus] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        const response = await fetch('http://localhost:3000/job-posts', {
-          method: 'GET',
+        const response = await fetch("http://localhost:3000/job-posts", {
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch job details');
+          throw new Error("Failed to fetch job details");
         }
 
         const data = await response.json();
         const job = data.find((job) => job.id === parseInt(id));
 
         if (!job) {
-          throw new Error('Job not found');
+          throw new Error("Job not found");
         }
 
         setJobDetails(job);
       } catch (error) {
         setError(error.message);
-        console.error('Error fetching job details:', error);
+        console.error("Error fetching job details:", error);
       }
     };
 
@@ -57,19 +57,22 @@ const JobDetailView = () => {
     e.preventDefault();
   };
 
-  const handleApply = async () => {
-    if (!cvFile) {
-      setApplicationStatus('Please upload a CV file.');
+  const handleApply = async (withCV = false) => {
+    if (!cvFile && !withCV) {
+      setApplicationStatus("Please upload a CV file.");
       return;
     }
 
     const formData = new FormData();
-    formData.append('id', id.toString());
-    formData.append('cv', cvFile);
+    formData.append("id", id.toString());
+    formData.append("cv", cvFile);
+
+    user.cv = true;
+    localStorage.setItem("user", JSON.stringify(user));
 
     try {
-      const response = await fetch('http://localhost:3000/job-applications', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/job-applications", {
+        method: "POST",
         headers: {
           "X-CSRF-Token": localStorage.getItem("token"),
         },
@@ -79,14 +82,14 @@ const JobDetailView = () => {
 
       if (!response.ok) {
         const errorResponse = await response.json();
-        console.log('Server error response:', errorResponse);
-        throw new Error('Failed to apply for job');
+        console.log("Server error response:", errorResponse);
+        throw new Error("Failed to apply for job");
       }
 
-      setApplicationStatus('Application submitted successfully!');
+      setApplicationStatus("Application submitted successfully!");
     } catch (error) {
-      setApplicationStatus('Error submitting application.');
-      console.error('Error applying for job:', error);
+      setApplicationStatus("Error submitting application.");
+      console.error("Error applying for job:", error);
     }
   };
 
@@ -116,17 +119,32 @@ const JobDetailView = () => {
 
       <div className="job-content">
         <div className="job-detail-info">
-          <img src={`http://localhost:3000/logo/${jobDetails.logo}`} alt={`${jobDetails.companyName} logo`} />
-          <p><strong>Company:</strong> {jobDetails.companyName}</p>
-          <p><strong>Location:</strong> {jobDetails.location}</p>
-          <p><strong>Level:</strong> {jobDetails.level.level}</p>
-          <p><strong>Contract Type:</strong> {jobDetails.contractType.type}</p>
-          <p><strong>Posted by:</strong> {jobDetails.author.username}</p>
+          <img
+            src={`http://localhost:3000/logo/${jobDetails.logo}`}
+            alt={`${jobDetails.companyName} logo`}
+          />
+          <p>
+            <strong>Company:</strong> {jobDetails.companyName}
+          </p>
+          <p>
+            <strong>Location:</strong> {jobDetails.location}
+          </p>
+          <p>
+            <strong>Level:</strong> {jobDetails.level.level}
+          </p>
+          <p>
+            <strong>Contract Type:</strong> {jobDetails.contractType.type}
+          </p>
+          <p>
+            <strong>Posted by:</strong> {jobDetails.author.username}
+          </p>
         </div>
         <div className="job-languages">
           <h3>Required Languages:</h3>
           {jobDetails.languages.map((language) => (
-            <span key={language.id} className="job-language">{language.language}</span>
+            <span key={language.id} className="job-language">
+              {language.language}
+            </span>
           ))}
         </div>
       </div>
@@ -146,25 +164,80 @@ const JobDetailView = () => {
           <div className="application-section">
             <h3>Apply for this Job</h3>
             {user ? (
-              <>
-                <label 
-                  htmlFor="cvUpload" 
-                  className="file-input-label" 
-                  onDrop={handleDrop} 
-                  onDragOver={handleDragOver}
-                >
-                  <img src={uploadFileIcon} alt="Upload icon" width="54" height="44" />
-                  {cvFile ? <p>{cvFile.name}</p> : <p>Drag and drop your CV here or click to upload (PDF only)</p>}
-                  <input 
-                    id="cvUpload" 
-                    type="file" 
-                    accept="application/pdf" 
-                    onChange={handleFileChange} 
-                    className="file-input"
-                  />
-                </label>
-                <button className="apply-btn" onClick={handleApply}>Apply</button>
-              </>
+              user.cv ? (
+                <>
+                  <button
+                    className="apply-btn"
+                    onClick={() => handleApply(true)}
+                  >
+                    Apply with current CV
+                  </button>
+                  <hr className="application-section__divider"></hr>
+                  <label
+                    htmlFor="cvUpload"
+                    className="file-input-label"
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                  >
+                    <img
+                      src={uploadFileIcon}
+                      alt="Upload icon"
+                      width="54"
+                      height="44"
+                    />
+                    {cvFile ? (
+                      <p>{cvFile.name}</p>
+                    ) : (
+                      <p>
+                        Drag and drop your CV here or click to upload (PDF only)
+                      </p>
+                    )}
+                    <input
+                      id="cvUpload"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      className="file-input"
+                    />
+                  </label>
+                  <button className="apply-btn" onClick={() => handleApply()}>
+                    Apply
+                  </button>
+                </>
+              ) : (
+                <>
+                  <label
+                    htmlFor="cvUpload"
+                    className="file-input-label"
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                  >
+                    <img
+                      src={uploadFileIcon}
+                      alt="Upload icon"
+                      width="54"
+                      height="44"
+                    />
+                    {cvFile ? (
+                      <p>{cvFile.name}</p>
+                    ) : (
+                      <p>
+                        Drag and drop your CV here or click to upload (PDF only)
+                      </p>
+                    )}
+                    <input
+                      id="cvUpload"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      className="file-input"
+                    />
+                  </label>
+                  <button className="apply-btn" onClick={handleApply}>
+                    Apply
+                  </button>
+                </>
+              )
             ) : (
               <p>You must be logged in to apply for this job.</p>
             )}
