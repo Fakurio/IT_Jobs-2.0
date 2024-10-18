@@ -5,7 +5,7 @@
   background-color: #1e2735;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -123,6 +123,23 @@
   border-radius: 10px;
   text-align: center;
   width: 100%;
+  position: relative;
+}
+
+.application-section__divider {
+  margin-block: 30px;
+}
+
+.application-section__divider::before {
+  content: "OR";
+  font-size: 18px;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -10%);
+  top: 35%;
+  background-color: #2e3b4e;
+  padding: 0 10px;
 }
 
 .application-section h3 {
@@ -144,18 +161,15 @@
   color: #aaa;
   margin-bottom: 20px;
   margin-left: 23%;
-  
 }
 
 .file-input-label:hover {
   border-color: #ffffff;
   color: #ffffff;
-  
 }
 
 .file-input {
   display: none;
-  
 }
 
 .apply-btn {
