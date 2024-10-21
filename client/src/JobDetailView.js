@@ -13,6 +13,33 @@ const JobDetailView = () => {
   const [applicationStatus, setApplicationStatus] = useState("");
   const [isFavourite, setIsFavourite] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
+  const filledStar = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="gold"
+      viewBox="0 0 24 24"
+      width="24px"
+      height="24px"
+    >
+      <path d="M12 .587l3.668 7.568 8.332 1.201-6.036 5.636 1.422 8.233L12 18.897l-7.386 3.865 1.422-8.233-6.036-5.636 8.332-1.201z" />
+    </svg>
+  );
+  
+  const emptyStar = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      stroke="gold"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      width="24px"
+      height="24px"
+    >
+      <path d="M12 .587l3.668 7.568 8.332 1.201-6.036 5.636 1.422 8.233L12 18.897l-7.386 3.865 1.422-8.233-6.036-5.636 8.332-1.201z" />
+    </svg>
+  );
+
+
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -52,14 +79,17 @@ const JobDetailView = () => {
           },
           credentials: "include",
         });
-
+    
         if (response.ok) {
-          setIsFavourite(true);
+          const favouritePosts = await response.json();
+          const isFav = favouritePosts.some(post => post.id === jobId);
+          setIsFavourite(isFav);
         }
       } catch (error) {
         console.error('Error checking favourite status:', error);
       }
     };
+    
 
     fetchJobDetails();
   }, [id]);
@@ -179,9 +209,13 @@ const JobDetailView = () => {
         <div className="salary-container">
           <span className="salary">${jobDetails.salary}</span>
         </div>
-        <button onClick={isFavourite ? removeFromFavourites : addToFavourites}>
-          {isFavourite ? "Remove from Favourites" : "Add to Favourites"}
-        </button>
+        <div
+          onClick={isFavourite ? removeFromFavourites : addToFavourites}
+          style={{ cursor: 'pointer' }}
+          aria-label={isFavourite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+        >
+          {isFavourite ? filledStar : emptyStar}
+        </div>
       </div>
 
       <div className="job-content">

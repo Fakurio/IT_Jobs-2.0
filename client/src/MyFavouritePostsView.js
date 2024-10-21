@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import "./MyPostsView.css";
+import { useNavigate } from "react-router-dom";
+import './MyFavouritePostsView.css';
 
 const MyFavouritePostsView = () => {
   const [favouritePosts, setFavouritePosts] = useState([]);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const fetchFavouritePosts = async () => {
     try {
@@ -33,26 +34,37 @@ const MyFavouritePostsView = () => {
     fetchFavouritePosts();
   }, []);
 
+  const handlePostClick = (id) => {
+    navigate(`/job-post/${id}`);
+  };
+
   return (
-    <div className="my-posts-view">
-      <h1>My Favourite Posts</h1>
+    <div className="my-favourite-posts-view">
+      <h1 className="my-favourite-posts-title">My Favourite Posts</h1>
 
       {favouritePosts.length === 0 ? (
-        <p>No favourite posts available.</p>
+        <p className="no-favourite-posts-message">No favourite posts available.</p>
       ) : (
-        <ul className="posts-list">
+        <ul className="favourite-posts-list">
           {favouritePosts.map((post) => (
-            <li key={post.id} className="post-item">
-              <Link to={`/job-post/${post.id}`}>
-                <h3>{post.title}</h3>
-              </Link>
-              <p>{post.companyName}</p>
-              <p>{post.location}</p>
+            <li key={post.id} className="favourite-post-item" onClick={() => handlePostClick(post.id)}>
+              <div className="favourite-post-header">
+                <div className="favourite-company-logo">
+                  <img src={`http://localhost:3000/logo/${post.logo}`} alt="Company Logo" />
+                </div>
+                <div className="favourite-job-title">{post.title}</div>
+                <div className="favourite-job-salary">${post.salary}</div>
+              </div>
+              <div className="favourite-job-details">
+                <div className="favourite-job-type">{post.type}</div>
+                <div className="favourite-job-poster">Posted by: {post.companyName}</div>
+                <div className="favourite-job-location">{post.location}</div>
+              </div>
             </li>
           ))}
         </ul>
       )}
-      {error && <p className="error">{error}</p>}
+      {error && <p className="favourite-error">{error}</p>}
     </div>
   );
 };
