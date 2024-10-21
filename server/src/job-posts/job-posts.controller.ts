@@ -120,6 +120,14 @@ export class JobPostsController {
 
   @UseInterceptors(CheckCsrfTokenInterceptor)
   @UseGuards(IsAuthenticated)
+  @Get("/favourite")
+  getFavouritePosts(@Req() request: Request) {
+    const authenticatedUser = request.user as User;
+    return this.jobPostsService.getFavouritePosts(authenticatedUser);
+  }
+
+  @UseInterceptors(CheckCsrfTokenInterceptor)
+  @UseGuards(IsAuthenticated)
   @Get("/:id/applications")
   getApplicationsForPost(
     @Req() request: Request,
@@ -170,14 +178,6 @@ export class JobPostsController {
   ) {
     const authenticatedUser = request.user as User;
     return this.jobPostsService.addPostToFavourite(postID, authenticatedUser);
-  }
-
-  @UseInterceptors(CheckCsrfTokenInterceptor)
-  @UseGuards(IsAuthenticated)
-  @Get("/favourite")
-  getFavouritePosts(@Req() request: Request) {
-    const authenticatedUser = request.user as User;
-    return this.jobPostsService.getFavouritePosts(authenticatedUser);
   }
 
   @UseInterceptors(CheckCsrfTokenInterceptor)
