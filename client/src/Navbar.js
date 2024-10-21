@@ -53,6 +53,8 @@ const Navbar = () => {
               <Link to="/edit-post">Edit post</Link>
               <Link to="/my-posts">My posts</Link>
               <Link to="/my-applications">My applications</Link>
+              <Link to="/my-favourite-posts">My favourite posts</Link>
+
             </>
           )}
           <div className="user-menu">

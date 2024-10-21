@@ -13,6 +13,7 @@ import EditPostView from './EditPostView';
 import MyPostsView from './MyPostsView';
 import MyApplicationsView from './MyApplicationsView';
 import EditProfileView from './EditProfileView';
+import MyFavouritePostsView from './MyFavouritePostsView';
 
 function AppContent() {
   const location = useLocation();
@@ -41,6 +42,8 @@ function AppContent() {
               <Route path="/my-posts" element={<MyPostsView />} />
               <Route path="/my-applications" element={<MyApplicationsView />} />
               <Route path="/edit-profile" element={<EditProfileView />} /> {}
+              <Route path="/my-favourite-posts" element={<MyFavouritePostsView />} />
+
             </>
           )}
         </Routes>

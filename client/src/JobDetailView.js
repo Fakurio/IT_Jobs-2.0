@@ -11,6 +11,7 @@ const JobDetailView = () => {
   const [error, setError] = useState(null);
   const [cvFile, setCvFile] = useState(null);
   const [applicationStatus, setApplicationStatus] = useState("");
+  const [isFavourite, setIsFavourite] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
@@ -35,14 +36,77 @@ const JobDetailView = () => {
         }
 
         setJobDetails(job);
+        checkIfFavourite(job.id);
       } catch (error) {
         setError(error.message);
         console.error("Error fetching job details:", error);
       }
     };
 
+    const checkIfFavourite = async (jobId) => {
+      try {
+        const response = await fetch(`http://localhost:3000/job-posts/favourite`, {
+          method: "GET",
+          headers: {
+            "X-CSRF-Token": localStorage.getItem("token"),
+          },
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          setIsFavourite(true);
+        }
+      } catch (error) {
+        console.error('Error checking favourite status:', error);
+      }
+    };
+
     fetchJobDetails();
   }, [id]);
+
+  const addToFavourites = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/job-posts/favourite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": localStorage.getItem("token"),
+        },
+        credentials: "include",
+        body: JSON.stringify({ id }),
+      });
+
+      if (response.ok) {
+        setIsFavourite(true);
+      } else {
+        throw new Error("Failed to add to favourites");
+      }
+    } catch (error) {
+      console.error("Error adding to favourites:", error);
+    }
+  };
+
+  const removeFromFavourites = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/job-posts/favourite", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": localStorage.getItem("token"),
+        },
+        credentials: "include",
+        body: JSON.stringify({ id }),
+      });
+
+      if (response.ok) {
+        setIsFavourite(false);
+      } else {
+        throw new Error("Failed to remove from favourites");
+      }
+    } catch (error) {
+      console.error("Error removing from favourites:", error);
+    }
+  };
 
   const handleFileChange = (e) => {
     setCvFile(e.target.files[0]);
@@ -115,6 +179,9 @@ const JobDetailView = () => {
         <div className="salary-container">
           <span className="salary">${jobDetails.salary}</span>
         </div>
+        <button onClick={isFavourite ? removeFromFavourites : addToFavourites}>
+          {isFavourite ? "Remove from Favourites" : "Add to Favourites"}
+        </button>
       </div>
 
       <div className="job-content">
@@ -154,7 +221,6 @@ const JobDetailView = () => {
         <p>{jobDetails.description}</p>
       </div>
 
-      {}
       {isAuthor ? (
         <div className="author-message">
           <p>You cannot apply for your own job posting.</p>
