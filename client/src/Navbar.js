@@ -1,21 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell } from '@fortawesome/free-solid-svg-icons';
+import io from 'socket.io-client';
 import './Navbar.css';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [isModerator, setIsModerator] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     const userData = localStorage.getItem('user');
+    let parsedUser = null;
+
     if (userData) {
-      const parsedUser = JSON.parse(userData);
+      parsedUser = JSON.parse(userData);
       setUser(parsedUser);
-      
+
       const userRoles = parsedUser?.roles.map((role) => role.role);
-      setIsModerator(userRoles.includes("MODERATOR"));
+      setIsModerator(userRoles && userRoles.includes("MODERATOR"));
+
+      if (parsedUser.notifications && Array.isArray(parsedUser.notifications)) {
+        setNotifications(parsedUser.notifications);
+      }
     }
+
+    const socket = io("http://localhost:3000");
+
+    socket.on("connect", () => {
+      if (parsedUser) {
+        socket.emit("new user", parsedUser.id);
+      }
+    });
+
+    socket.on("new application", (data) => {
+      setNotifications(prev => [...prev, { type: 'application', message: data.message || 'New application received.' }]);
+    });
+
+    socket.on("status change", (data) => {
+      setNotifications(prev => [...prev, { type: 'status change', message: data.message || 'Status has been changed.' }]);
+    });
+
+    socket.on("post rejected", (data) => {
+      setNotifications(prev => [...prev, { type: 'post rejected', message: data.message || 'Post has been rejected.' }]);
+    });
+
+    socket.on("exception", (data) => {
+      console.error(data);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -33,6 +72,7 @@ const Navbar = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
+        setNotifications([]);
         navigate('/login');
       } else {
         throw new Error('Failed to log out');
@@ -40,6 +80,10 @@ const Navbar = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleBellClick = () => {
+    setShowNotifications(!showNotifications);
   };
 
   return (
@@ -54,7 +98,27 @@ const Navbar = () => {
               <Link to="/my-posts">My posts</Link>
               <Link to="/my-applications">My applications</Link>
               <Link to="/my-favourite-posts">My favourite posts</Link>
-
+              <div onClick={handleBellClick} style={{ position: 'relative', marginLeft: '1rem', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faBell} size="lg" style={{ color: 'white' }} />
+                {notifications.length > 0 && (
+                  <span className="notification-badge">{notifications.length}</span>
+                )}
+                {showNotifications && (
+                  <div className="notification-dropdown">
+                    {notifications.length === 0 ? (
+                      <p>No notifications</p>
+                    ) : (
+                      <ul>
+                        {notifications.map((notification, index) => (
+                          <li key={index}>
+                            {notification.message || `Notification of type: ${notification.type}`}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
           <div className="user-menu">
