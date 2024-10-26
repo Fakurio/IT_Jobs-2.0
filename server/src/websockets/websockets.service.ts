@@ -74,19 +74,19 @@ export class WebSocketsService {
     let notification: NotificationMessage;
     if (applicantUsername) {
       notification = {
-        message: `${applicantUsername} applied for your post: ${postTitle}`,
+        content: `${applicantUsername} applied for your post: ${postTitle}`,
         type: NotificationTypeEnum.NEW_APPLICATION,
       };
     } else {
       notification = {
-        message: `Moderator has rejected your post: ${postTitle}`,
+        content: `Moderator has rejected your post: ${postTitle}`,
         type: NotificationTypeEnum.POST_REJECTED,
       };
     }
     if (!authorSocketID) {
       try {
         await this.saveNotification(
-          notification.message,
+          notification.content,
           notification.type,
           authorID
         );
@@ -104,14 +104,14 @@ export class WebSocketsService {
 
   async notifyApplicant(applicantID: number, postTitle: string) {
     const applicantSocketID = this.connectedUsers.get(applicantID);
-    const notification = {
-      message: `Your application for post ${postTitle} has been reviewed`,
+    const notification: NotificationMessage = {
+      content: `Your application for post ${postTitle} has been reviewed`,
       type: NotificationTypeEnum.STATUS_CHANGE,
     };
     if (!applicantSocketID) {
       try {
         await this.saveNotification(
-          notification.message,
+          notification.content,
           notification.type,
           applicantID
         );

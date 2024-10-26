@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
-import io from 'socket.io-client';
-import './Navbar.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell } from "@fortawesome/free-solid-svg-icons";
+import io from "socket.io-client";
+import "./Navbar.css";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -11,9 +11,9 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     let parsedUser = null;
 
     if (userData) {
@@ -37,15 +37,34 @@ const Navbar = () => {
     });
 
     socket.on("new application", (data) => {
-      setNotifications(prev => [...prev, { type: 'application', message: data.message || 'New application received.' }]);
+      console.log(data);
+      setNotifications((prev) => [
+        ...prev,
+        {
+          type: data.type,
+          content: data.content,
+        },
+      ]);
     });
 
     socket.on("status change", (data) => {
-      setNotifications(prev => [...prev, { type: 'status change', message: data.message || 'Status has been changed.' }]);
+      setNotifications((prev) => [
+        ...prev,
+        {
+          type: data.type,
+          content: data.content,
+        },
+      ]);
     });
 
     socket.on("post rejected", (data) => {
-      setNotifications(prev => [...prev, { type: 'post rejected', message: data.message || 'Post has been rejected.' }]);
+      setNotifications((prev) => [
+        ...prev,
+        {
+          type: data.type,
+          content: data.content,
+        },
+      ]);
     });
 
     socket.on("exception", (data) => {
@@ -59,26 +78,26 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:3000/auth/logout', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/auth/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           "X-CSRF-Token": localStorage.getItem("token"),
         },
         credentials: "include",
       });
 
       if (response.ok) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setUser(null);
         setNotifications([]);
-        navigate('/login');
+        navigate("/login");
       } else {
-        throw new Error('Failed to log out');
+        throw new Error("Failed to log out");
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -98,10 +117,23 @@ const Navbar = () => {
               <Link to="/my-posts">My posts</Link>
               <Link to="/my-applications">My applications</Link>
               <Link to="/my-favourite-posts">My favourite posts</Link>
-              <div onClick={handleBellClick} style={{ position: 'relative', marginLeft: '1rem', cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faBell} size="lg" style={{ color: 'white' }} />
+              <div
+                onClick={handleBellClick}
+                style={{
+                  position: "relative",
+                  marginLeft: "1rem",
+                  cursor: "pointer",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faBell}
+                  size="lg"
+                  style={{ color: "white" }}
+                />
                 {notifications.length > 0 && (
-                  <span className="notification-badge">{notifications.length}</span>
+                  <span className="notification-badge">
+                    {notifications.length}
+                  </span>
                 )}
                 {showNotifications && (
                   <div className="notification-dropdown">
@@ -111,7 +143,7 @@ const Navbar = () => {
                       <ul>
                         {notifications.map((notification, index) => (
                           <li key={index}>
-                            {notification.message || `Notification of type: ${notification.type}`}
+                            {`${notification.type}: ${notification.content}`}
                           </li>
                         ))}
                       </ul>

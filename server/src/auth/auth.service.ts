@@ -88,7 +88,11 @@ export class AuthService {
       username: req.user.username,
       roles: req.user.roles,
       message: "Logged in",
-      notifications: notifications,
+      notifications: notifications.map((noti) => ({
+        id: noti.id,
+        content: noti.content,
+        type: noti.type.type,
+      })),
     };
     this.webSocketsService.updateNotificationsReadStatus(notifications);
     return response;
