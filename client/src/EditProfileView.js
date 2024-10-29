@@ -7,6 +7,7 @@ const EditProfileView = () => {
   const [newPassword, setNewPassword] = useState("");
   const [cvFile, setCvFile] = useState(null);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
   const [existingCv, setExistingCv] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -40,12 +41,23 @@ const EditProfileView = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     const formData = new FormData();
 
     if (username) formData.append("username", username);
     if (oldPassword) formData.append("oldPassword", oldPassword);
-    if (newPassword) formData.append("newPassword", newPassword);
+    if (newPassword) {
+      if (!newPassword.match(passwordRegex)) {
+        setIsError(true);
+        setMessage(
+          "New password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character."
+        );
+        return;
+      } else {
+        formData.append("newPassword", newPassword);
+      }
+    }
     if (cvFile) {
       formData.append("cv", cvFile);
       user.cv = true;
@@ -70,8 +82,14 @@ const EditProfileView = () => {
 
         if (response.ok) {
           setMessage("Profile updated successfully!");
+          setTimeout(() => {
+            setNewPassword("");
+            setOldPassword("");
+            setUsername("");
+          }, 2000);
         } else {
           const errorResponse = await response.json();
+          setIsError(true);
           setMessage(`Error: ${errorResponse.message}`);
         }
       } catch (error) {
@@ -79,6 +97,7 @@ const EditProfileView = () => {
         console.error("Profile update error:", error);
       }
     } else {
+      setIsError(true);
       setMessage("Please update at least one field.");
     }
   };
@@ -126,13 +145,20 @@ const EditProfileView = () => {
         user.cv = null;
         localStorage.setItem("user", JSON.stringify(user));
       } else {
+        setIsError(true);
         setMessage("Error deleting CV.");
       }
     } catch (error) {
       console.error("Error deleting CV:", error);
+      setIsError(true);
       setMessage("Error deleting CV.");
     }
   };
+
+  useEffect(() => {
+    setMessage("");
+    setIsError(false);
+  }, [oldPassword, newPassword, cvFile, username]);
 
   return (
     <div className="edit-profile-container">
@@ -200,7 +226,9 @@ const EditProfileView = () => {
         )}
         <button type="submit">Update Profile</button>
       </form>
-      {message && <p className="message">{message}</p>}
+      {message && (
+        <p className={`message ${isError ? "error" : ""}`}>{message}</p>
+      )}
     </div>
   );
 };

@@ -2,20 +2,13 @@ import { z } from "zod";
 
 const UpdateProfileSchema = z
   .object({
-    oldPassword: z
-      .string()
-      .regex(
-        new RegExp(
-          "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$",
-        ),
-      )
-      .optional(),
+    oldPassword: z.string().optional(),
     newPassword: z
       .string()
       .regex(
         new RegExp(
-          "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$",
-        ),
+          "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$"
+        )
       )
       .optional(),
     username: z

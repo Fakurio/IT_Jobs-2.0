@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import './AddPostForm.css';
-import uploadFileIcon from './upload_file.png';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import "./AddPostForm.css";
+import uploadFileIcon from "./upload_file.png";
+import { useParams, useNavigate } from "react-router-dom";
 
 const EditPostForm = () => {
   const { id } = useParams();
-  const [companyName, setCompanyName] = useState('');
-  const [title, setTitle] = useState('');
-  const [salary, setSalary] = useState('');
+  const [companyName, setCompanyName] = useState("");
+  const [title, setTitle] = useState("");
+  const [salary, setSalary] = useState("");
   const [logo, setLogo] = useState(null);
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [contractType, setContractType] = useState('');
-  const [level, setLevel] = useState('');
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [contractType, setContractType] = useState("");
+  const [level, setLevel] = useState("");
   const [languages, setLanguages] = useState([]);
   const [contractTypes, setContractTypes] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -23,16 +23,16 @@ const EditPostForm = () => {
     const fetchPostDetails = async () => {
       try {
         const response = await fetch(`http://localhost:3000/job-posts/${id}`, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': localStorage.getItem('token')
+            "Content-Type": "application/json",
+            "X-CSRF-Token": localStorage.getItem("token"),
           },
-          credentials: 'include'
+          credentials: "include",
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch post details');
+          throw new Error("Failed to fetch post details");
         }
 
         const data = await response.json();
@@ -43,9 +43,9 @@ const EditPostForm = () => {
         setLocation(data.location);
         setContractType(data.contractType.type);
         setLevel(data.level.level);
-        setLanguages(data.languages.map(lang => lang.language));
+        setLanguages(data.languages.map((lang) => lang.language));
       } catch (error) {
-        console.error('Error fetching post details:', error);
+        console.error("Error fetching post details:", error);
       }
     };
 
@@ -54,19 +54,21 @@ const EditPostForm = () => {
 
   useEffect(() => {
     const fetchContractTypes = async () => {
-      const response = await fetch('http://localhost:3000/job-posts/contract-types');
+      const response = await fetch(
+        "http://localhost:3000/job-posts/contract-types"
+      );
       const data = await response.json();
       setContractTypes(data);
     };
 
     const fetchLevels = async () => {
-      const response = await fetch('http://localhost:3000/job-posts/levels');
+      const response = await fetch("http://localhost:3000/job-posts/levels");
       const data = await response.json();
       setLevels(data);
     };
 
     const fetchLanguages = async () => {
-      const response = await fetch('http://localhost:3000/job-posts/languages');
+      const response = await fetch("http://localhost:3000/job-posts/languages");
       const data = await response.json();
       setLanguageOptions(data);
     };
@@ -100,31 +102,31 @@ const EditPostForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('companyName', companyName);
-    formData.append('title', title);
-    formData.append('salary', salary);
-    formData.append('description', description);
-    formData.append('location', location);
-    formData.append('contractType', contractType);
-    formData.append('level', level);
-    formData.append('languages', languages.join(","));
+    formData.append("companyName", companyName);
+    formData.append("title", title);
+    formData.append("salary", salary);
+    formData.append("description", description);
+    formData.append("location", location);
+    formData.append("contractType", contractType);
+    formData.append("level", level);
+    formData.append("languages", languages.join(","));
     if (logo) {
-      formData.append('logo', logo);
+      formData.append("logo", logo);
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      alert('Token is missing. Please log in again.');
+      alert("Token is missing. Please log in again.");
       return;
     }
 
     try {
       const response = await fetch(`http://localhost:3000/job-posts/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'X-CSRF-Token': token
+          "X-CSRF-Token": token,
         },
-        credentials: 'include',
+        credentials: "include",
         body: formData,
       });
 
@@ -133,11 +135,11 @@ const EditPostForm = () => {
         throw new Error(error.message);
       }
 
-      alert('Post updated successfully!');
-      navigate('/my-posts');
+      alert("Ogłoszenie będzie widoczne po zatwierdzeniu przez moderatora");
+      navigate("/my-posts");
     } catch (error) {
-      console.error('Error updating post:', error);
-      alert('Failed to update the post');
+      console.error("Error updating post:", error);
+      alert("Failed to update the post");
     }
   };
 
@@ -173,13 +175,17 @@ const EditPostForm = () => {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
-            <img 
-              src={uploadFileIcon} 
-              alt="Upload icon" 
-              width="54" 
-              height="44" 
+            <img
+              src={uploadFileIcon}
+              alt="Upload icon"
+              width="54"
+              height="44"
             />
-            {logo ? <p>{logo.name}</p> : <p>Upload new company logo (optional)</p>}
+            {logo ? (
+              <p>{logo.name}</p>
+            ) : (
+              <p>Upload new company logo (optional)</p>
+            )}
             <input
               id="logoUpload"
               type="file"
@@ -188,7 +194,9 @@ const EditPostForm = () => {
             />
           </label>
           <div className="file-text-logo">
-            <p>Upload a file with your company logo in PNG, JPG or SVG format.</p>
+            <p>
+              Upload a file with your company logo in PNG, JPG or SVG format.
+            </p>
           </div>
         </div>
         <textarea

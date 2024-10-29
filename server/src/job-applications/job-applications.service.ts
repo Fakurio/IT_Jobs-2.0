@@ -60,7 +60,7 @@ export class JobApplicationsService {
       );
       await this.jobApplicationsRepository.save(jobApplication);
 
-      this.webSocketsService.notifyPostAuthor(
+      await this.webSocketsService.notifyPostAuthor(
         post.author.id,
         post.title,
         authenticatedUser.username
@@ -138,7 +138,7 @@ export class JobApplicationsService {
       application.status = status;
       await this.jobApplicationsRepository.save(application);
 
-      this.webSocketsService.notifyApplicant(
+      await this.webSocketsService.notifyApplicant(
         application.user.id,
         application.jobPost.title
       );

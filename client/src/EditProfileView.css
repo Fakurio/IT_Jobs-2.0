@@ -99,6 +99,11 @@ body {
   font-size: 1.1em;
   color: #00d084;
 }
+
+.error {
+  color: rgb(239, 25, 25);
+}
+
 .edit-profile-container label {
   margin-top: 2px;
   text-align: center;

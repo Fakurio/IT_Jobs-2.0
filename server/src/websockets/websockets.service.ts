@@ -38,12 +38,12 @@ export class WebSocketsService {
 
   async addNewUser(client: Socket, userID: number) {
     this.connectedUsers.set(userID, client.id);
-    console.log(this.connectedUsers);
+    // console.log(this.connectedUsers);
   }
 
   removeUser(userID: number) {
     this.connectedUsers.delete(userID);
-    console.log(this.connectedUsers);
+    // console.log(this.connectedUsers);
   }
 
   async getNotificationsForUser(userID: number) {

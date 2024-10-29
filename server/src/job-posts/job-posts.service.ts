@@ -157,14 +157,16 @@ export class JobPostsService {
         .getOneOrFail();
       post.status = <Status>await this.statusRepository.findOneBy({ status });
       if (status === StatusEnum.REJECTED) {
-        this.webSocketsService.notifyPostAuthor(post.author.id, post.title);
+        await this.webSocketsService.notifyPostAuthor(
+          post.author.id,
+          post.title
+        );
       }
       await this.jobPostsRepository.save(post);
       return {
         message: "Post status updated",
       };
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(
         "Post with this ID does not exist or does not require verification"
       );

@@ -24,7 +24,7 @@ const JobDetailView = () => {
       <path d="M12 .587l3.668 7.568 8.332 1.201-6.036 5.636 1.422 8.233L12 18.897l-7.386 3.865 1.422-8.233-6.036-5.636 8.332-1.201z" />
     </svg>
   );
-  
+
   const emptyStar = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -38,8 +38,6 @@ const JobDetailView = () => {
       <path d="M12 .587l3.668 7.568 8.332 1.201-6.036 5.636 1.422 8.233L12 18.897l-7.386 3.865 1.422-8.233-6.036-5.636 8.332-1.201z" />
     </svg>
   );
-
-
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -72,39 +70,44 @@ const JobDetailView = () => {
 
     const checkIfFavourite = async (jobId) => {
       try {
-        const response = await fetch(`http://localhost:3000/job-posts/favourite`, {
-          method: "GET",
-          headers: {
-            "X-CSRF-Token": localStorage.getItem("token"),
-          },
-          credentials: "include",
-        });
-    
+        const response = await fetch(
+          `http://localhost:3000/job-posts/favourite`,
+          {
+            method: "GET",
+            headers: {
+              "X-CSRF-Token": localStorage.getItem("token"),
+            },
+            credentials: "include",
+          }
+        );
+
         if (response.ok) {
           const favouritePosts = await response.json();
-          const isFav = favouritePosts.some(post => post.id === jobId);
+          const isFav = favouritePosts.some((post) => post.id === jobId);
           setIsFavourite(isFav);
         }
       } catch (error) {
-        console.error('Error checking favourite status:', error);
+        console.error("Error checking favourite status:", error);
       }
     };
-    
 
     fetchJobDetails();
   }, [id]);
 
   const addToFavourites = async () => {
     try {
-      const response = await fetch("http://localhost:3000/job-posts/favourite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": localStorage.getItem("token"),
-        },
-        credentials: "include",
-        body: JSON.stringify({ id }),
-      });
+      const response = await fetch(
+        "http://localhost:3000/job-posts/favourite",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": localStorage.getItem("token"),
+          },
+          credentials: "include",
+          body: JSON.stringify({ id }),
+        }
+      );
 
       if (response.ok) {
         setIsFavourite(true);
@@ -118,15 +121,18 @@ const JobDetailView = () => {
 
   const removeFromFavourites = async () => {
     try {
-      const response = await fetch("http://localhost:3000/job-posts/favourite", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": localStorage.getItem("token"),
-        },
-        credentials: "include",
-        body: JSON.stringify({ id }),
-      });
+      const response = await fetch(
+        "http://localhost:3000/job-posts/favourite",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": localStorage.getItem("token"),
+          },
+          credentials: "include",
+          body: JSON.stringify({ id }),
+        }
+      );
 
       if (response.ok) {
         setIsFavourite(false);
@@ -211,7 +217,7 @@ const JobDetailView = () => {
         </div>
         <div
           onClick={isFavourite ? removeFromFavourites : addToFavourites}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           aria-label={isFavourite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
         >
           {isFavourite ? filledStar : emptyStar}
@@ -333,7 +339,7 @@ const JobDetailView = () => {
                       className="file-input"
                     />
                   </label>
-                  <button className="apply-btn" onClick={handleApply}>
+                  <button className="apply-btn" onClick={() => handleApply()}>
                     Apply
                   </button>
                 </>
