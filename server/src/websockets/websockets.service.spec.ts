@@ -3,7 +3,10 @@ import { WebSocketsService } from "./websockets.service";
 import { UsersService } from "../users/users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Notification } from "../entities/notification.entity";
-import { NotificationType } from "../entities/notification-type.entity";
+import {
+  NotificationType,
+  NotificationTypeEnum,
+} from "../entities/notification-type.entity";
 import { Socket, Server } from "socket.io";
 import { Message } from "../entities/message.entity";
 
@@ -87,7 +90,10 @@ describe("NotificationsService", () => {
 
   it("should notify post author about new application => author is offline", async () => {
     service["connectedUsers"].set(1, "123");
-    await service.notifyPostAuthor(3, "title", "username");
+    await service.notifyPostAuthor(3, NotificationTypeEnum.NEW_APPLICATION, {
+      applicantUsername: "username",
+      postTitle: "title",
+    });
     expect(notifications.length).toBe(1);
     expect(notifications[0].receiver).toEqual({ id: 3 });
   });
@@ -100,13 +106,18 @@ describe("NotificationsService", () => {
       })),
     } as unknown as Server;
     service.setServer(server);
-    service.notifyPostAuthor(3, "title", "username");
+    service.notifyPostAuthor(3, NotificationTypeEnum.NEW_APPLICATION, {
+      applicantUsername: "username",
+      postTitle: "title",
+    });
     expect(notifications.length).toBe(0);
   });
 
   it("should notify post author about rejected post => author is offline", async () => {
     service["connectedUsers"].set(1, "123");
-    await service.notifyPostAuthor(3, "title");
+    await service.notifyPostAuthor(3, NotificationTypeEnum.POST_REJECTED, {
+      postTitle: "title",
+    });
     expect(notifications.length).toBe(1);
     expect(notifications[0].content).toBe(
       "Moderator has rejected your post: title"

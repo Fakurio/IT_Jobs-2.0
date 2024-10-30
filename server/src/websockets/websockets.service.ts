@@ -10,10 +10,11 @@ import { User } from "../entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { Repository } from "typeorm";
 import { NotificationMessage } from "./interfaces/notification-message.interface";
-import { NotificationChannel } from "./types/notification-channel.type";
 import { ChatMessage } from "./interfaces/chat-message.interface";
 import { WsException } from "@nestjs/websockets";
 import { Message } from "../entities/message.entity";
+import { NotificationArgs } from "./interfaces/notification-args.interface";
+import { NotificationFactory } from "./notification/NotificationFactory";
 
 @Injectable()
 export class WebSocketsService {
@@ -67,59 +68,37 @@ export class WebSocketsService {
 
   async notifyPostAuthor(
     authorID: number,
-    postTitle: string,
-    applicantUsername?: string
+    type: NotificationTypeEnum,
+    args: NotificationArgs
   ) {
     const authorSocketID = this.connectedUsers.get(authorID);
-    let notification: NotificationMessage;
-    if (applicantUsername) {
-      notification = {
-        content: `${applicantUsername} applied for your post: ${postTitle}`,
-        type: NotificationTypeEnum.NEW_APPLICATION,
-      };
-    } else {
-      notification = {
-        content: `Moderator has rejected your post: ${postTitle}`,
-        type: NotificationTypeEnum.POST_REJECTED,
-      };
-    }
+    const notification = NotificationFactory.createNotification(type, args);
     if (!authorSocketID) {
       try {
-        await this.saveNotification(
-          notification.content,
-          notification.type,
-          authorID
-        );
+        await this.saveNotification(notification, authorID);
       } catch (error) {
         console.error(error);
       }
     } else {
-      if (notification.type === NotificationTypeEnum.POST_REJECTED) {
-        this.sendNotification(authorSocketID, "post rejected", notification);
-      } else {
-        this.sendNotification(authorSocketID, "new application", notification);
-      }
+      this.sendNotification(authorSocketID, notification);
     }
   }
 
-  async notifyApplicant(applicantID: number, postTitle: string) {
+  async notifyApplicant(
+    applicantID: number,
+    type: NotificationTypeEnum,
+    args: NotificationArgs
+  ) {
     const applicantSocketID = this.connectedUsers.get(applicantID);
-    const notification: NotificationMessage = {
-      content: `Your application for post ${postTitle} has been reviewed`,
-      type: NotificationTypeEnum.STATUS_CHANGE,
-    };
+    const notification = NotificationFactory.createNotification(type, args);
     if (!applicantSocketID) {
       try {
-        await this.saveNotification(
-          notification.content,
-          notification.type,
-          applicantID
-        );
+        await this.saveNotification(notification, applicantID);
       } catch (error) {
         console.error(error);
       }
     } else {
-      this.sendNotification(applicantSocketID, "status change", notification);
+      this.sendNotification(applicantSocketID, notification);
     }
   }
 
@@ -209,26 +188,26 @@ export class WebSocketsService {
   }
 
   private async saveNotification(
-    content: string,
-    type: NotificationTypeEnum,
+    notification: NotificationMessage,
     receiverID: number
   ) {
-    const notification = new Notification();
-    notification.content = content;
-    notification.type = <NotificationType>(
+    const newNotification = new Notification();
+    newNotification.content = notification.content;
+    newNotification.type = <NotificationType>(
       await this.notificationTypesRepository.findOne({
-        where: { type },
+        where: { type: notification.type },
       })
     );
-    notification.receiver = <User>await this.usersService.findByID(receiverID);
-    await this.notificationsRepository.save(notification);
+    newNotification.receiver = <User>(
+      await this.usersService.findByID(receiverID)
+    );
+    await this.notificationsRepository.save(newNotification);
   }
 
   private sendNotification(
     socketID: string,
-    channel: NotificationChannel,
-    message: NotificationMessage
+    notification: NotificationMessage
   ) {
-    this.server.to(socketID).emit(channel, message);
+    this.server.to(socketID).emit(notification.channel, notification);
   }
 }

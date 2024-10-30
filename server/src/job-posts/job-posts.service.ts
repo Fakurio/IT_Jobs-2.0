@@ -19,6 +19,7 @@ import { join } from "path";
 import { UsersService } from "../users/users.service";
 import { JobApplicationsService } from "../job-applications/job-applications.service";
 import { WebSocketsService } from "../websockets/websockets.service";
+import { NotificationTypeEnum } from "../entities/notification-type.entity";
 
 @Injectable()
 export class JobPostsService {
@@ -159,7 +160,8 @@ export class JobPostsService {
       if (status === StatusEnum.REJECTED) {
         await this.webSocketsService.notifyPostAuthor(
           post.author.id,
-          post.title
+          NotificationTypeEnum.POST_REJECTED,
+          { postTitle: post.title }
         );
       }
       await this.jobPostsRepository.save(post);

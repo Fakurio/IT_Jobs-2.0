@@ -22,6 +22,7 @@ import { createReadStream } from "fs";
 import { join } from "path";
 import { UpdateApplicationStatusDTO } from "./dto/update-application-status.dto";
 import { WebSocketsService } from "../websockets/websockets.service";
+import { NotificationTypeEnum } from "../entities/notification-type.entity";
 
 @Injectable()
 export class JobApplicationsService {
@@ -62,8 +63,8 @@ export class JobApplicationsService {
 
       await this.webSocketsService.notifyPostAuthor(
         post.author.id,
-        post.title,
-        authenticatedUser.username
+        NotificationTypeEnum.NEW_APPLICATION,
+        { postTitle: post.title, applicantUsername: authenticatedUser.username }
       );
       return { message: "Application sent successfully" };
     } catch (error) {
@@ -140,7 +141,8 @@ export class JobApplicationsService {
 
       await this.webSocketsService.notifyApplicant(
         application.user.id,
-        application.jobPost.title
+        NotificationTypeEnum.STATUS_CHANGE,
+        { postTitle: application.jobPost.title }
       );
       return { message: "Application status updated successfully" };
     } catch (error) {
